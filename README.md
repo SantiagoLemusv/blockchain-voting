@@ -1,14 +1,14 @@
-\## 🗳️ Sistema de Votación Blockchain
-\*\*Proyecto de Grado\*\* - Plataforma de votación descentralizada con Ethereum
+Sistema de Votación Blockchain - Plataforma de votación descentralizada con Ethereum
 
-\## 🚀 Características
+\## Características:
 \- ✅ Registro seguro de votantes
-\- ✅ Elecciones con múltiples opciones
-\- ✅ Voto único verificable
-\- ✅ Resultados en tiempo real
-\- ✅ Auditoría completa on-chain
+\- ✅ Plataforma adaptable, segura, confiable.
+\- ✅ Voto único verificable con Sistema de Auditoría Transparente y Participativa (SATP)
+\- ✅ Resultados en tiempo real con panel de Resultados con Métricas de Confianza y Participación
+\- ✅ Asistente inteligente para facilitar la comprensión del proceso de votación y la información sobre las opciones, sin influir en la decisión del votante.
 
-\## 🛠️ Tecnologías
+
+\##  Tecnologías
 
 \- \*\*Blockchain\*\*: Ethereum (Sepolia Testnet)
 
@@ -20,7 +20,7 @@
 
 \- \*\*Wallet\*\*: MetaMask
 
-\## 📁 Estructura del Proyecto
+\## Estructura del Proyecto
 blockchain-voting/
 ├── contracts/ # Contratos inteligentes
 ├── scripts/ # Scripts de despliegue
@@ -30,7 +30,7 @@ blockchain-voting/
 └── docker/ # Configuración Docker
 
 
-\## 🏃‍♂️ Inicio Rápido
+\##  Inicio Rápido
 
 
 \### 1. Instalar dependencias
@@ -72,9 +72,10 @@ cd frontend
 npm install
 npm run dev
 
-🔗 Redes
+Redes
 &nbsp;   Local: http://localhost:3000
 &nbsp;   Sepolia: https://sepolia.etherscan.io
 
 📄 Licencia
-MIT © 2024 Proyecto de Grado
+MIT © 2026 Proyecto de Grado
+
