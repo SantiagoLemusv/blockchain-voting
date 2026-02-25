@@ -44,10 +44,9 @@ cp frontend/.env.example frontend/.env
 - `PRIVATE_KEY` — llave de la cuenta deployer (sin comillas)
 - `ETHERSCAN_API_KEY` — opcional para verificación
 - `REPORT_GAS` — opcional (`true`) para habilitar gas reporter
-
-3) Completa en `frontend/.env` las direcciones de los contratos una vez desplegados:
+3) Completa en `frontend/.env` las direcciones una vez desplegados:
 - `VITE_CONTRACT_REGISTRY_ADDRESS`
-- `VITE_CONTRACT_VOTING_ADDRESS`
+- `VITE_CONTRACT_FACTORY_ADDRESS`
 
 ## 🏃‍♂️ Pasos para reproducir
 ### Backend (Hardhat)
@@ -57,7 +56,7 @@ npm run compile
 npm test
 npm run node                      # nodo local
 # nueva terminal
-npm run deploy:localhost          # despliega Registry y Voting
+npm run deploy:localhost          # despliega VoterRegistry y ElectionFactory
 npm run seed:localhost            # registra 2 votantes y crea elección demo
 ```
 
@@ -74,7 +73,7 @@ cd frontend
 npm install
 npm run dev   # http://localhost:5173
 ```
-En `frontend/.env` define `VITE_CONTRACT_REGISTRY_ADDRESS` y `VITE_CONTRACT_VOTING_ADDRESS` (de tu despliegue). La UI detecta si eres admin (owner del Registry) y habilita registrar votantes / crear elecciones.
+En `frontend/.env` define `VITE_CONTRACT_REGISTRY_ADDRESS` y `VITE_CONTRACT_FACTORY_ADDRESS` (de tu despliegue). La UI detecta si eres admin (owner del Registry) y habilita registrar votantes / crear elecciones.
 
 ## 🔄 Flujo de ramas
 - `main`: estable, listo para presentación.

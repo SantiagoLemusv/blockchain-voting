@@ -7,7 +7,7 @@ export default function ElectionViewer({ elections }) {
           <p className="text-gray-500">Aún no hay elecciones creadas.</p>
         )}
         {elections.map((election) => (
-          <div key={election.id} className="border rounded p-4 hover:shadow-md">
+          <div key={election.address} className="border rounded p-4 hover:shadow-md">
             <div className="flex justify-between items-center">
               <h3 className="font-semibold">{election.name}</h3>
               <span

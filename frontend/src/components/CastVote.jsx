@@ -4,12 +4,12 @@ export default function CastVote({ elections, onVote, loadingVote }) {
   const [selectedElection, setSelectedElection] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
 
-  const handleElectionChange = (id) => {
-    setSelectedElection(id);
+  const handleElectionChange = (addr) => {
+    setSelectedElection(addr);
     setSelectedOption(null);
   };
 
-  const current = elections.find((e) => e.id === selectedElection);
+  const current = elections.find((e) => e.address === selectedElection);
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -20,14 +20,14 @@ export default function CastVote({ elections, onVote, loadingVote }) {
       <select
         className="w-full border rounded p-2 mb-4"
         value={selectedElection || ""}
-        onChange={(e) => handleElectionChange(Number(e.target.value))}
+        onChange={(e) => handleElectionChange(e.target.value)}
       >
         <option value="">Seleccionar elección...</option>
         {elections
           .filter((e) => e.isActive)
           .map((e) => (
-            <option key={e.id} value={e.id}>
-              {e.name} (ID {e.id})
+            <option key={e.address} value={e.address}>
+              {e.name} ({e.address.slice(0, 6)}…)
             </option>
           ))}
       </select>
@@ -52,7 +52,7 @@ export default function CastVote({ elections, onVote, loadingVote }) {
       <button
         className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:bg-gray-300"
         disabled={!current || selectedOption === null || loadingVote}
-        onClick={() => onVote(current.id, selectedOption)}
+        onClick={() => onVote(current.address, selectedOption)}
       >
         {loadingVote ? "Enviando..." : "Emitir Voto"}
       </button>

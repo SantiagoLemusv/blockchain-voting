@@ -6,16 +6,17 @@ import CastVote from "./components/CastVote";
 import ElectionViewer from "./components/ElectionViewer";
 import { getContract, ensureNetwork } from "./utils/web3";
 import { registryAbi } from "./abi/registry";
-import { votingAbi } from "./abi/voting";
+import { factoryAbi } from "./abi/factory";
+import { electionAbi } from "./abi/election";
 
 const REGISTRY_ADDRESS = import.meta.env.VITE_CONTRACT_REGISTRY_ADDRESS;
-const VOTING_ADDRESS = import.meta.env.VITE_CONTRACT_VOTING_ADDRESS;
+const FACTORY_ADDRESS = import.meta.env.VITE_CONTRACT_FACTORY_ADDRESS;
 
 function App() {
   const [account, setAccount] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
   const [registry, setRegistry] = useState(null);
-  const [voting, setVoting] = useState(null);
+  const [factory, setFactory] = useState(null);
   const [elections, setElections] = useState([]);
   const [totalVoters, setTotalVoters] = useState(0);
   const [loadingVote, setLoadingVote] = useState(false);
@@ -39,42 +40,51 @@ function App() {
   };
 
   const loadContracts = async () => {
-    if (!REGISTRY_ADDRESS || !VOTING_ADDRESS) {
+    if (!REGISTRY_ADDRESS || !FACTORY_ADDRESS) {
       console.warn("Faltan direcciones en frontend/.env");
       return;
     }
     const reg = await getContract(REGISTRY_ADDRESS, registryAbi);
-    const vot = await getContract(VOTING_ADDRESS, votingAbi);
+    const fac = await getContract(FACTORY_ADDRESS, factoryAbi);
     setRegistry(reg);
-    setVoting(vot);
+    setFactory(fac);
 
     const owner = await reg.owner();
     setIsAdmin(owner.toLowerCase() === (await reg.runner.getAddress()).toLowerCase());
 
-    await refreshData(reg, vot);
+    await refreshData(reg, fac);
   };
 
-  const refreshData = async (reg, vot) => {
-    if (!reg || !vot) return;
+  const refreshData = async (reg, fac) => {
+    if (!reg || !fac) return;
     const total = await reg.getTotalRegistered();
     setTotalVoters(Number(total));
 
-    const next = Number(await vot.nextElectionId());
+    const addresses = await fac.getElections();
     const items = [];
-    for (let id = 1; id < next; id++) {
-      const info = await vot.getElectionInfo(id);
-      if (!info.exists) continue;
-      const results = await vot.getElectionResults(id);
+    for (let idx = 0; idx < addresses.length; idx++) {
+      const addr = addresses[idx];
+      const election = await getContract(addr, electionAbi);
+      const [name, description, startTime, endTime, active] = await Promise.all([
+        election.name(),
+        election.description(),
+        election.startTime(),
+        election.endTime(),
+        election.isActive(),
+      ]);
+      const candidates = await election.getCandidates();
+      const totalVotes = await election.totalVotes();
       items.push({
-        id,
-        name: info.name,
-        description: info.description,
-        startTime: Number(info.startTime),
-        endTime: Number(info.endTime),
-        totalVotes: Number(results.totalVotes),
-        options: results.options,
-        votes: results.votes.map((v) => Number(v)),
-        isActive: results.isActive,
+        id: idx + 1,
+        address: addr,
+        name,
+        description,
+        startTime: Number(startTime),
+        endTime: Number(endTime),
+        totalVotes: Number(totalVotes),
+        options: candidates.map((c) => c.name),
+        votes: candidates.map((c) => Number(c.votes)),
+        isActive: active,
       });
     }
     setElections(items);
@@ -83,23 +93,24 @@ function App() {
   const handleRegister = async (addr) => {
     const tx = await registry.registerVoter(addr);
     await tx.wait();
-    await refreshData(registry, voting);
+    await refreshData(registry, factory);
   };
 
   const handleCreateElection = async ({ name, description, options, startMinutes, durationMinutes }) => {
-    const latest = await voting.runner.provider.getBlock("latest");
+    const latest = await factory.runner.provider.getBlock("latest");
     const startTime = Number(latest.timestamp) + startMinutes * 60;
-    const duration = durationMinutes * 60;
-    const tx = await voting.createElection(name, description, options, startTime, duration);
+    const endTime = startTime + durationMinutes * 60;
+    const tx = await factory.createElection(name, description, options, startTime, endTime);
     await tx.wait();
-    await refreshData(registry, voting);
+    await refreshData(registry, factory);
   };
 
-  const handleVote = async (electionId, option) => {
+  const handleVote = async (electionAddress, option) => {
     setLoadingVote(true);
-    const tx = await voting.vote(electionId, option);
+    const election = await getContract(electionAddress, electionAbi);
+    const tx = await election.vote(option);
     await tx.wait();
-    await refreshData(registry, voting);
+    await refreshData(registry, factory);
     setLoadingVote(false);
   };
 

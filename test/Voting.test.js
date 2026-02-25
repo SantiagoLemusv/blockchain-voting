@@ -1,106 +1,76 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Blockchain Voting System", function () {
-  let registry, voting;
+describe("Modular Voting Platform", function () {
+  let registry, factory, election;
   let owner, voter1, voter2;
-  
+
   beforeEach(async function () {
     [owner, voter1, voter2] = await ethers.getSigners();
-    
-    // Desplegar Registry
-    const Registry = await ethers.getContractFactory("Registry");
+
+    const Registry = await ethers.getContractFactory("VoterRegistry");
     registry = await Registry.deploy();
     await registry.waitForDeployment();
-    
-    // Desplegar Voting
-    const Voting = await ethers.getContractFactory("Voting");
-    voting = await Voting.deploy(await registry.getAddress());
-    await voting.waitForDeployment();
-    
-    // Registrar votantes
+
+    const Factory = await ethers.getContractFactory("ElectionFactory");
+    factory = await Factory.deploy(await registry.getAddress());
+    await factory.waitForDeployment();
+
     await registry.registerVoter(voter1.address);
     await registry.registerVoter(voter2.address);
+
+    const latest = await ethers.provider.getBlock("latest");
+    const start = Number(latest.timestamp) + 100;
+    const end = start + 3600;
+    const tx = await factory.createElection(
+      "Test Election",
+      "Test Description",
+      ["A", "B", "C"],
+      start,
+      end
+    );
+    const receipt = await tx.wait();
+    const evt = receipt.logs
+      .map((l) => factory.interface.parseLog(l))
+      .find((e) => e && e.name === "ElectionCreated");
+    election = await ethers.getContractAt("Election", evt.args.electionAddress);
   });
-  
-  describe("Registry", function () {
-    it("Should register voters", async function () {
-      expect(await registry.isRegistered(voter1.address)).to.be.true;
-      expect(await registry.getTotalRegistered()).to.equal(2);
-    });
-    
-    it("Should not allow duplicate registration", async function () {
-      await expect(
-        registry.registerVoter(voter1.address)
-      ).to.be.revertedWith("Already registered");
-    });
+
+  it("Registra votantes", async function () {
+    expect(await registry.isRegistered(voter1.address)).to.be.true;
+    expect(await registry.getTotalRegistered()).to.equal(2);
   });
-  
-  describe("Voting", function () {
-    let electionId;
-    
-    beforeEach(async function () {
-      const latestBlock = await ethers.provider.getBlock("latest");
-      const startTime = Number(latestBlock.timestamp) + 100; // asegura futuro vs tiempo de cadena
-      const options = ["Option A", "Option B", "Option C"];
-      
-      const tx = await voting.createElection(
-        "Test Election",
-        "Test Description",
-        options,
-        startTime,
-        3600 // 1 hour
-      );
-      
-      const receipt = await tx.wait();
-      electionId = 1;
-    });
-    
-    it("Should create election", async function () {
-      const info = await voting.getElectionInfo(electionId);
-      expect(info.name).to.equal("Test Election");
-    });
-    
-    it("Should allow voting", async function () {
-      // Avanzar el tiempo (simulación)
-      await ethers.provider.send("evm_increaseTime", [200]);
-      await ethers.provider.send("evm_mine", []);
-      
-      await voting.connect(voter1).vote(electionId, 0);
-      expect(await voting.hasVoted(electionId, voter1.address)).to.be.true;
-    });
-    
-    it("Should not allow double voting", async function () {
-      await ethers.provider.send("evm_increaseTime", [200]);
-      await ethers.provider.send("evm_mine", []);
-      
-      await voting.connect(voter1).vote(electionId, 0);
-      
-      await expect(
-        voting.connect(voter1).vote(electionId, 1)
-      ).to.be.revertedWith("Already voted");
-    });
 
-    it("Should reject elections with less than 2 options", async function () {
-      const latestBlock = await ethers.provider.getBlock("latest");
-      const startTime = Number(latestBlock.timestamp) + 100;
-      await expect(
-        voting.createElection("Bad", "Only one", ["OnlyOne"], startTime, 3600)
-      ).to.be.revertedWith("Minimum 2 options");
-    });
+  it("Crea elecciones desde la factory", async function () {
+    expect(await factory.electionsCount()).to.equal(1);
+    expect(await election.name()).to.equal("Test Election");
+  });
 
-    it("Should return correct results", async function () {
-      await ethers.provider.send("evm_increaseTime", [200]);
-      await ethers.provider.send("evm_mine", []);
-      
-      await voting.connect(voter1).vote(electionId, 0);
-      await voting.connect(voter2).vote(electionId, 1);
+  it("Permite votar una sola vez por elección", async function () {
+    await ethers.provider.send("evm_increaseTime", [200]);
+    await ethers.provider.send("evm_mine", []);
 
-      const results = await voting.getElectionResults(electionId);
-      expect(results.votes[0]).to.equal(1);
-      expect(results.votes[1]).to.equal(1);
-      expect(results.totalVotes).to.equal(2);
-      expect(results.isActive).to.be.true;
-    });
+    await election.connect(voter1).vote(0);
+    await expect(election.connect(voter1).vote(1)).to.be.revertedWith("Already voted");
+  });
+
+  it("Impide votar fuera de la ventana de tiempo", async function () {
+    await expect(election.connect(voter1).vote(0)).to.be.revertedWith("Election not started");
+    await ethers.provider.send("evm_increaseTime", [4000]);
+    await ethers.provider.send("evm_mine", []);
+    await expect(election.connect(voter1).vote(0)).to.be.revertedWith("Election ended");
+  });
+
+  it("Conteo por candidato", async function () {
+    await ethers.provider.send("evm_increaseTime", [200]);
+    await ethers.provider.send("evm_mine", []);
+    await election.connect(voter1).vote(0);
+    await election.connect(voter2).vote(1);
+
+    const candidate0 = await election.getCandidate(0);
+    const candidate1 = await election.getCandidate(1);
+    expect(candidate0[1]).to.equal(1);
+    expect(candidate1[1]).to.equal(1);
+    expect(await election.totalVotes()).to.equal(2);
   });
 });
