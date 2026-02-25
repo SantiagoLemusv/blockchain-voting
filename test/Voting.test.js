@@ -40,7 +40,8 @@ describe("Blockchain Voting System", function () {
     let electionId;
     
     beforeEach(async function () {
-      const startTime = Math.floor(Date.now() / 1000) + 100;
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const startTime = Number(latestBlock.timestamp) + 100; // asegura futuro vs tiempo de cadena
       const options = ["Option A", "Option B", "Option C"];
       
       const tx = await voting.createElection(
@@ -78,6 +79,28 @@ describe("Blockchain Voting System", function () {
       await expect(
         voting.connect(voter1).vote(electionId, 1)
       ).to.be.revertedWith("Already voted");
+    });
+
+    it("Should reject elections with less than 2 options", async function () {
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const startTime = Number(latestBlock.timestamp) + 100;
+      await expect(
+        voting.createElection("Bad", "Only one", ["OnlyOne"], startTime, 3600)
+      ).to.be.revertedWith("Minimum 2 options");
+    });
+
+    it("Should return correct results", async function () {
+      await ethers.provider.send("evm_increaseTime", [200]);
+      await ethers.provider.send("evm_mine", []);
+      
+      await voting.connect(voter1).vote(electionId, 0);
+      await voting.connect(voter2).vote(electionId, 1);
+
+      const results = await voting.getElectionResults(electionId);
+      expect(results.votes[0]).to.equal(1);
+      expect(results.votes[1]).to.equal(1);
+      expect(results.totalVotes).to.equal(2);
+      expect(results.isActive).to.be.true;
     });
   });
 });

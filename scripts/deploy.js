@@ -1,8 +1,6 @@
 const hre = require("hardhat");
 
 async function main() {
-  console.log(" Desplegando contratos...");
-  
   // Desplegar Registry
   const Registry = await hre.ethers.deployContract("Registry");
   await Registry.waitForDeployment();
@@ -14,11 +12,9 @@ async function main() {
   await Voting.waitForDeployment();
   const votingAddress = await Voting.getAddress();
   console.log("✅ Voting:", votingAddress);
-  
-  console.log("\n Guarda estas direcciones en .env:");
-  console.log(`VITE_CONTRACT_REGISTRY_ADDRESS=${registryAddress}`);
-  console.log(`VITE_CONTRACT_VOTING_ADDRESS=${votingAddress}`);
-  
+  console.log(`REGISTRY_ADDRESS=${registryAddress}`);
+  console.log(`VOTING_ADDRESS=${votingAddress}`);
+
   return { registryAddress, votingAddress };
 }
 

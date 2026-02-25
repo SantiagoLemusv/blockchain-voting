@@ -1,80 +1,92 @@
-\## 🗳️ Sistema de Votación Blockchain
-\*\*Proyecto de Grado\*\* - Plataforma de votación descentralizada con Ethereum
+# 🗳️ Sistema de Votación Blockchain  
+**Proyecto de Grado** — Plataforma de votación descentralizada sobre Ethereum (Sepolia Testnet)
 
-\## 🚀 Características
-\- ✅ Registro seguro de votantes
-\- ✅ Elecciones con múltiples opciones
-\- ✅ Voto único verificable
-\- ✅ Resultados en tiempo real
-\- ✅ Auditoría completa on-chain
+## 🚀 Características
+- Registro seguro de votantes
+- Elecciones con múltiples opciones
+- Voto único verificable
+- Resultados en tiempo real
+- Auditoría completa on-chain
 
-\## 🛠️ Tecnologías
+## 🛠️ Stack
+- **Blockchain:** Ethereum (Sepolia)
+- **Smart Contracts:** Solidity 0.8.21
+- **Framework:** Hardhat + Ethers.js
+- **Frontend:** React 18, Vite, Tailwind CSS
+- **Wallet:** MetaMask
 
-\- \*\*Blockchain\*\*: Ethereum (Sepolia Testnet)
-
-\- \*\*Smart Contracts\*\*: Solidity 0.8.21
-
-\- \*\*Desarrollo\*\*: Hardhat, Ethers.js
-
-\- \*\*Frontend\*\*: React 18, Vite, Tailwind CSS
-
-\- \*\*Wallet\*\*: MetaMask
-
-\## 📁 Estructura del Proyecto
+## 📁 Estructura
+```
 blockchain-voting/
-├── contracts/ # Contratos inteligentes
-├── scripts/ # Scripts de despliegue
-├── test/ # Pruebas unitarias
-├── frontend/ # Aplicación web React
-├── docs/ # Documentación técnica
-└── docker/ # Configuración Docker
+├── contracts/       # Contratos inteligentes
+├── scripts/         # Scripts de despliegue/verificación
+├── test/            # Pruebas unitarias
+├── frontend/        # Aplicación web React
+├── docs/            # Documentación técnica (SRS, arquitectura)
+├── docker/          # Configuración Docker (pendiente)
+└── hardhat.config.js
+```
 
+## ⚙️ Requisitos
+- Node.js ≥ 18
+- npm ≥ 9
+- MetaMask instalado (para pruebas en Sepolia)
+- Variables de entorno configuradas (ver siguiente sección)
 
-\## 🏃‍♂️ Inicio Rápido
+## 🔐 Variables de entorno
+1) Copia los ejemplos:
+```bash
+cp .env.example .env
+cp frontend/.env.example frontend/.env
+```
+2) Completa en `.env`:
+- `SEPOLIA_RPC_URL` — endpoint de Infura/Alchemy
+- `PRIVATE_KEY` — llave de la cuenta deployer (sin comillas)
+- `ETHERSCAN_API_KEY` — opcional para verificación
+- `REPORT_GAS` — opcional (`true`) para habilitar gas reporter
 
+3) Completa en `frontend/.env` las direcciones de los contratos una vez desplegados:
+- `VITE_CONTRACT_REGISTRY_ADDRESS`
+- `VITE_CONTRACT_VOTING_ADDRESS`
 
-\### 1. Instalar dependencias
-
+## 🏃‍♂️ Pasos para reproducir
+### Backend (Hardhat)
 ```bash
 npm install
-
-2\. Configurar variables
-
-bash
-cp .env.example .env
-
-\# Edita .env con tus claves
-
-3\. Compilar contratos
-
-bash
 npm run compile
-
-4\. Ejecutar pruebas
-
-bash
 npm test
+npm run node                      # nodo local
+# nueva terminal
+npm run deploy:localhost          # despliega Registry y Voting
+npm run seed:localhost            # registra 2 votantes y crea elección demo
+```
 
-5\. Desplegar localmente
+### Despliegue a Sepolia
+```bash
+npm run deploy:sepolia
+# opcional: npm run verify  (requiere ETHERSCAN_API_KEY)
+```
+Guarda las direcciones que imprime `scripts/deploy.js` y colócalas en `frontend/.env`.
 
-bash
-npm run node
-
-\# En otra terminal:
-
-npm run deploy:localhost
-
-6\. Iniciar frontend
-
-bash
-
+### Frontend
+```bash
 cd frontend
 npm install
-npm run dev
+npm run dev   # http://localhost:5173
+```
+En `frontend/.env` define `VITE_CONTRACT_REGISTRY_ADDRESS` y `VITE_CONTRACT_VOTING_ADDRESS` (de tu despliegue). La UI detecta si eres admin (owner del Registry) y habilita registrar votantes / crear elecciones.
 
-🔗 Redes
-&nbsp;   Local: http://localhost:3000
-&nbsp;   Sepolia: https://sepolia.etherscan.io
+## 🔄 Flujo de ramas
+- `main`: estable, listo para presentación.
+- `develop`: integración continua. Crea branches de feature desde aquí y abre PRs.
 
-📄 Licencia
+## ✅ Checklist previo a subir al remoto
+- [ ] `.env.example` y `frontend/.env.example` con placeholders actualizados
+- [ ] `README` con pasos reproducibles (este archivo)
+- [ ] `hardhat.config.js` válido y sin llaves privadas
+- [ ] `node_modules` ignorado en `.gitignore`
+- [ ] Pruebas locales: `npm test`
+- [ ] Direcciones de contratos copiadas al frontend tras despliegue
+
+## 📄 Licencia
 MIT © 2024 Proyecto de Grado
