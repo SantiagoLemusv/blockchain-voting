@@ -1,31 +1,35 @@
+import { format } from "date-fns";
+import es from "date-fns/locale/es";
+
 export default function ElectionViewer({ elections }) {
+  const formatDate = (ts) =>
+    format(new Date(ts * 1000), "dd MMM yyyy HH:mm", { locale: es });
+
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-6">Elecciones Disponibles</h2>
-      <div className="space-y-4">
-        {elections.length === 0 && (
-          <p className="text-gray-500">Aún no hay elecciones creadas.</p>
-        )}
+    <div>
+      <div className="flex-between" style={{ marginBottom: 12 }}>
+        <h2 className="section-title">Elecciones</h2>
+        <span className="badge badge-muted">Total: {elections.length}</span>
+      </div>
+      {elections.length === 0 && <p className="muted">Aún no hay elecciones creadas.</p>}
+      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
         {elections.map((election) => (
-          <div key={election.address} className="border rounded p-4 hover:shadow-md">
-            <div className="flex justify-between items-center">
-              <h3 className="font-semibold">{election.name}</h3>
-              <span
-                className={`px-3 py-1 rounded-full text-sm ${
-                  election.isActive ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"
-                }`}
-              >
+          <div key={election.address} className="election-item">
+            <div className="flex-between">
+              <h3 className="election-title">{election.name}</h3>
+              <span className={election.isActive ? "badge badge-success" : "badge badge-muted"}>
                 {election.isActive ? "Activa" : "Finalizada"}
               </span>
             </div>
-            <p className="text-gray-600 mt-2">
-              Total de votos: {election.totalVotes}
+            <p className="muted" style={{ margin: "4px 0" }}>
+              {formatDate(election.startTime)} — {formatDate(election.endTime)}
             </p>
-            <div className="mt-2 space-y-1">
+            <p className="muted" style={{ margin: "4px 0" }}>Total de votos: {election.totalVotes}</p>
+            <div style={{ marginTop: 8 }}>
               {election.options.map((opt, idx) => (
-                <div key={idx} className="flex justify-between text-sm text-gray-700">
+                <div key={idx} className="flex-between" style={{ fontSize: 14 }}>
                   <span>{opt}</span>
-                  <span className="font-semibold">{election.votes[idx] || 0} votos</span>
+                  <strong>{election.votes[idx] || 0}</strong>
                 </div>
               ))}
             </div>

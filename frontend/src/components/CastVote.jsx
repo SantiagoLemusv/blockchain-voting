@@ -12,13 +12,16 @@ export default function CastVote({ elections, onVote, loadingVote }) {
   const current = elections.find((e) => e.address === selectedElection);
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4">Emitir Voto</h2>
-      <p className="text-gray-600 mb-4">
-        Selecciona una elección activa y una opción.
+    <div>
+      <div className="flex-between">
+        <h2 className="section-title">Emitir voto</h2>
+        <span className="badge badge-muted">Activas: {elections.filter((e) => e.isActive).length}</span>
+      </div>
+      <p className="muted" style={{ marginBottom: 12 }}>
+        Selecciona una elección activa y tu opción preferida.
       </p>
       <select
-        className="w-full border rounded p-2 mb-4"
+        className="select"
         value={selectedElection || ""}
         onChange={(e) => handleElectionChange(e.target.value)}
       >
@@ -33,9 +36,9 @@ export default function CastVote({ elections, onVote, loadingVote }) {
       </select>
 
       {current && (
-        <div className="space-y-2 mb-4">
+        <div className="space-y-6" style={{ marginTop: 12, marginBottom: 12 }}>
           {current.options.map((opt, idx) => (
-            <label key={idx} className="flex items-center space-x-2">
+            <label key={idx} className="pill">
               <input
                 type="radio"
                 name="option"
@@ -50,7 +53,8 @@ export default function CastVote({ elections, onVote, loadingVote }) {
       )}
 
       <button
-        className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:bg-gray-300"
+        className="btn btn-primary"
+        style={{ width: "100%" }}
         disabled={!current || selectedOption === null || loadingVote}
         onClick={() => onVote(current.address, selectedOption)}
       >

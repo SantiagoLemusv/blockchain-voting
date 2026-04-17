@@ -24,15 +24,39 @@ export const ensureNetwork = async (expected = "sepolia") => {
   if (!window.ethereum) return;
   const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
   const current = parseInt(chainIdHex, 16);
-  const sepolia = 11155111;
-  if (expected === "sepolia" && current !== sepolia) {
+
+  if (expected === "sepolia" && current !== 11155111) {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0xaa36a7" }], // sepolia
+        params: [{ chainId: "0xaa36a7" }],
       });
     } catch (e) {
       console.warn("No se pudo cambiar de red:", e);
+    }
+  }
+
+  if (expected === "localhost" && current !== 31337) {
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x7a69" }],
+      });
+    } catch (e) {
+      // si no existe, intenta agregarla
+      try {
+        await window.ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: [{
+            chainId: "0x7a69",
+            chainName: "Hardhat Localhost",
+            nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+            rpcUrls: ["http://127.0.0.1:8545"],
+          }],
+        });
+      } catch (err) {
+        console.warn("No se pudo cambiar/agregar localhost:", err);
+      }
     }
   }
 };

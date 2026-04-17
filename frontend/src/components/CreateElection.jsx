@@ -10,6 +10,7 @@ export default function CreateElection({ isAdmin, onCreate }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!name || options.split(",").filter(Boolean).length < 2) return;
     setLoading(true);
     await onCreate({
       name,
@@ -25,63 +26,66 @@ export default function CreateElection({ isAdmin, onCreate }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4">Crear Elección</h2>
-      {!isAdmin && (
-        <p className="text-gray-600 mb-3">Solo el admin puede crear elecciones.</p>
-      )}
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div>
+      <div className="flex-between">
+        <h2 className="section-title">Crear elección</h2>
+        <span className={isAdmin ? "badge badge-success" : "badge badge-muted"}>
+          {isAdmin ? "Admin" : "Sólo admin"}
+        </span>
+      </div>
+      <p className="muted" style={{ marginBottom: 12 }}>
+        Define nombre, descripción, opciones (separadas por coma) y tiempos.
+      </p>
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 8 }}>
         <input
-          className="w-full border rounded px-3 py-2"
+          className="input"
           placeholder="Nombre"
           value={name}
           onChange={(e) => setName(e.target.value)}
           disabled={!isAdmin || loading}
         />
         <textarea
-          className="w-full border rounded px-3 py-2"
+          className="textarea"
           placeholder="Descripción"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           disabled={!isAdmin || loading}
         />
         <input
-          className="w-full border rounded px-3 py-2"
+          className="input"
           placeholder="Opciones separadas por coma"
           value={options}
           onChange={(e) => setOptions(e.target.value)}
           disabled={!isAdmin || loading}
         />
-        <div className="grid grid-cols-2 gap-3">
-          <label className="text-sm text-gray-700">
-            Inicio en (min):
+        <div className="flex-between" style={{ gap: 8 }}>
+          <div style={{ flex: 1 }}>
+            <div className="small">Inicio en (min)</div>
             <input
               type="number"
-              className="w-full border rounded px-2 py-1"
+              className="input"
               value={startMinutes}
               onChange={(e) => setStartMinutes(e.target.value)}
               disabled={!isAdmin || loading}
               min={1}
             />
-          </label>
-          <label className="text-sm text-gray-700">
-            Duración (min):
+          </div>
+          <div style={{ flex: 1 }}>
+            <div className="small">Duración (min)</div>
             <input
               type="number"
-              className="w-full border rounded px-2 py-1"
+              className="input"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
               disabled={!isAdmin || loading}
               min={5}
             />
-          </label>
+          </div>
         </div>
         <button
           type="submit"
-          disabled={!isAdmin || loading}
-          className={`w-full text-white px-4 py-2 rounded ${
-            !isAdmin ? "bg-gray-300 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
-          }`}
+          className="btn btn-primary"
+          disabled={!isAdmin || loading || !name || options.split(",").filter(Boolean).length < 2}
         >
           {loading ? "Creando..." : "Crear elección"}
         </button>

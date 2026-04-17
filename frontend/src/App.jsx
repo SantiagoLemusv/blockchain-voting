@@ -11,6 +11,7 @@ import { electionAbi } from "./abi/election";
 
 const REGISTRY_ADDRESS = import.meta.env.VITE_CONTRACT_REGISTRY_ADDRESS;
 const FACTORY_ADDRESS = import.meta.env.VITE_CONTRACT_FACTORY_ADDRESS;
+const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
 function App() {
   const [account, setAccount] = useState("");
@@ -32,7 +33,7 @@ function App() {
 
   const connectWallet = async () => {
     if (!window.ethereum) return;
-    await ensureNetwork("sepolia");
+    await ensureNetwork(NETWORK);
     const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
     const addr = accounts[0];
     setAccount(addr);
@@ -115,38 +116,36 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">🗳️ Sistema de Votación Blockchain</h1>
-            <p className="text-gray-600 text-sm">
-              Red: Sepolia | Votantes registrados: {totalVoters}
-            </p>
-          </div>
-          <ConnectWallet account={account} onConnect={connectWallet} />
+    <div>
+      <header className="app-header">
+        <div>
+          <h1 className="app-title">🗳️ Sistema de Votación</h1>
+          <p className="app-subtitle">Red: {NETWORK} · Votantes: {totalVoters}</p>
         </div>
+        <ConnectWallet account={account} onConnect={connectWallet} />
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="layout">
         {!account ? (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold mb-4">Conecta tu wallet para comenzar</h2>
-            <button
-              onClick={connectWallet}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-            >
+          <div className="card" style={{ textAlign: "center" }}>
+            <h2 className="section-title">Conecta tu wallet</h2>
+            <p className="muted">Necesitas una wallet para interactuar con el sistema.</p>
+            <button className="btn btn-primary" onClick={connectWallet} style={{ marginTop: 12 }}>
               Conectar MetaMask
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 space-y-6">
+          <div className="grid">
+            <div className="card">
               <RegisterVoter isAdmin={isAdmin} onRegister={handleRegister} />
+            </div>
+            <div className="card">
               <CreateElection isAdmin={isAdmin} onCreate={handleCreateElection} />
+            </div>
+            <div className="card" style={{ gridColumn: "1 / -1" }}>
               <CastVote elections={elections} onVote={handleVote} loadingVote={loadingVote} />
             </div>
-            <div className="lg:col-span-2">
+            <div className="card" style={{ gridColumn: "1 / -1" }}>
               <ElectionViewer elections={elections} />
             </div>
           </div>

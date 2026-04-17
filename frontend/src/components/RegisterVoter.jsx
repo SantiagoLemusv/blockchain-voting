@@ -14,29 +14,25 @@ export default function RegisterVoter({ isAdmin, onRegister }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4">Registrar Votante</h2>
-      {!isAdmin && (
-        <p className="text-gray-600 mb-4">
-          Debes ser admin (owner del Registry) para registrar votantes.
-        </p>
-      )}
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div>
+      <div className="flex-between">
+        <h2 className="section-title">Registrar Votante</h2>
+        <span className={isAdmin ? "badge badge-success" : "badge badge-muted"}>
+          {isAdmin ? "Admin" : "Sólo admin"}
+        </span>
+      </div>
+      <p className="muted" style={{ marginBottom: 12 }}>
+        Ingresa la dirección de la cuenta que podrá votar.
+      </p>
+      <form onSubmit={handleSubmit} style={{ display: "grid", gap: 8 }}>
         <input
-          type="text"
+          className="input"
           placeholder="0x123..."
           value={addr}
           onChange={(e) => setAddr(e.target.value)}
-          className="w-full border rounded px-3 py-2"
           disabled={!isAdmin || loading}
         />
-        <button
-          type="submit"
-          disabled={!isAdmin || loading}
-          className={`w-full text-white px-4 py-2 rounded ${
-            !isAdmin ? "bg-gray-300 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
+        <button className="btn btn-primary" type="submit" disabled={!isAdmin || loading || !addr}>
           {loading ? "Registrando..." : "Registrar"}
         </button>
       </form>
