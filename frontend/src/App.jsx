@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import ConnectWallet from "./components/ConnectWallet";
 import RegisterVoter from "./components/RegisterVoter";
 import CreateElection from "./components/CreateElection";
@@ -93,31 +94,51 @@ function App() {
   };
 
   const handleRegister = async (addr) => {
-    const tx = await registry.registerVoter(addr);
-    await tx.wait();
-    await refreshData(registry, factory);
+    try {
+      const tx = await registry.registerVoter(addr);
+      await tx.wait();
+      await refreshData(registry, factory);
+      toast.success("✅ Votante registrado");
+    } catch (err) {
+      console.error(err);
+      toast.error(`❌ Error: ${err.message || "No se pudo registrar"}`);
+    }
   };
 
   const handleCreateElection = async ({ name, description, options, startMinutes, durationMinutes }) => {
-    const latest = await factory.runner.provider.getBlock("latest");
-    const startTime = Number(latest.timestamp) + startMinutes * 60;
-    const endTime = startTime + durationMinutes * 60;
-    const tx = await factory.createElection(name, description, options, startTime, endTime);
-    await tx.wait();
-    await refreshData(registry, factory);
+    try {
+      const latest = await factory.runner.provider.getBlock("latest");
+      const startTime = Number(latest.timestamp) + startMinutes * 60;
+      const endTime = startTime + durationMinutes * 60;
+      const tx = await factory.createElection(name, description, options, startTime, endTime);
+      await tx.wait();
+      await refreshData(registry, factory);
+      toast.success("✅ Elección creada");
+    } catch (err) {
+      console.error(err);
+      toast.error(`❌ Error: ${err.message || "No se pudo crear elección"}`);
+    }
   };
 
   const handleVote = async (electionAddress, option) => {
     setLoadingVote(true);
-    const election = await getContract(electionAddress, electionAbi);
-    const tx = await election.vote(option);
-    await tx.wait();
-    await refreshData(registry, factory);
-    setLoadingVote(false);
+    try {
+      const election = await getContract(electionAddress, electionAbi);
+      const tx = await election.vote(option);
+      await tx.wait();
+      await refreshData(registry, factory);
+      toast.success("✅ Voto registrado");
+    } catch (err) {
+      console.error(err);
+      toast.error(`❌ Error: ${err.message || "No se pudo votar"}`);
+    } finally {
+      setLoadingVote(false);
+    }
   };
 
   return (
     <div>
+      <ToastContainer position="bottom-right" autoClose={4000} />
       <header className="app-header">
         <div>
           <h1 className="app-title">🗳️ Sistema de Votación</h1>
