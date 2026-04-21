@@ -47,36 +47,57 @@ async function main() {
   console.log(`Usando FACTORY_ADDRESS=${facAddr}`);
 
   // Registrar votantes
-  for (const v of [voter1.address, voter2.address]) {
-    if (!(await registry.isRegistered(v))) {
-      const tx = await registry.registerVoter(v);
-      await tx.wait();
-      console.log("✅ Registrado:", v);
+  try {
+    for (const v of [voter1.address, voter2.address]) {
+      try {
+        if (!(await registry.isRegistered(v))) {
+          const tx = await registry.registerVoter(v);
+          await tx.wait();
+          console.log("✅ Registrado:", v);
+        } else {
+          console.log("⚠️  Ya registrado:", v);
+        }
+      } catch (err) {
+        console.error(`❌ Error registrando ${v}:`, err.message);
+        throw err;
+      }
     }
+  } catch (err) {
+    console.error("❌ Fallo en registro de votantes");
+    throw err;
   }
 
   // Crear elección de ejemplo
-  const latest = await ethers.provider.getBlock("latest");
-  const startTime = Number(latest.timestamp) + 120;
-  const endTime = startTime + 3600;
-  const options = ["Opcion A", "Opcion B"];
+  try {
+    const latest = await ethers.provider.getBlock("latest");
+    const startTime = Number(latest.timestamp) + 120;
+    const endTime = startTime + 3600;
+    const options = ["Opcion A", "Opcion B"];
 
-  const tx = await factory.createElection(
-    "Eleccion Demo",
-    "Creada por script seed",
-    options,
-    startTime,
-    endTime
-  );
-  const receipt = await tx.wait();
+    const tx = await factory.createElection(
+      "Eleccion Demo",
+      "Creada por script seed",
+      options,
+      startTime,
+      endTime
+    );
+    const receipt = await tx.wait();
 
-  // obtener dirección de la elección creada
-  const event = receipt.logs
-    .map((l) => factory.interface.parseLog(l))
-    .find((e) => e && e.name === "ElectionCreated");
-  const electionAddress = event?.args?.electionAddress;
+    // obtener dirección de la elección creada
+    const event = receipt.logs
+      .map((l) => factory.interface.parseLog(l))
+      .find((e) => e && e.name === "ElectionCreated");
+    const electionAddress = event?.args?.electionAddress;
 
-  console.log("✅ Elección demo creada:", electionAddress);
+    if (!electionAddress) {
+      throw new Error("No se encontró evento ElectionCreated en receipt");
+    }
+
+    console.log("✅ Elección demo creada:", electionAddress);
+  } catch (err) {
+    console.error("❌ Error creando elección:", err.message);
+    throw err;
+  }
 }
 
 main().catch((err) => {

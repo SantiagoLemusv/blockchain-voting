@@ -42,7 +42,8 @@ function App() {
 
   const loadContracts = async () => {
     if (!REGISTRY_ADDRESS || !FACTORY_ADDRESS) {
-      console.warn("Faltan direcciones en frontend/.env");
+      console.error("❌ Faltan VITE_CONTRACT_REGISTRY_ADDRESS o VITE_CONTRACT_FACTORY_ADDRESS en frontend/.env");
+      setAccount("ERROR");
       return;
     }
     const reg = await getContract(REGISTRY_ADDRESS, registryAbi);
