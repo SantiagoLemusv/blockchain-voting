@@ -14,6 +14,20 @@ const REGISTRY_ADDRESS = import.meta.env.VITE_CONTRACT_REGISTRY_ADDRESS;
 const FACTORY_ADDRESS = import.meta.env.VITE_CONTRACT_FACTORY_ADDRESS;
 const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
+const getHumanError = (err) => {
+  const msg = err.message || err.reason || err.data?.message || "";
+  if (msg.includes("Start must be future")) return "La elección debe comenzar en el futuro. Usa al menos 5 minutos.";
+  if (msg.includes("Already voted")) return "Esta cuenta ya votó en esta elección.";
+  if (msg.includes("Not authorized")) return "No estás registrado como votante.";
+  if (msg.includes("Not owner")) return "Solo el admin puede realizar esta acción.";
+  if (msg.includes("Already registered")) return "Este votante ya está registrado.";
+  if (msg.includes("Election not started")) return "La elección aún no ha comenzado.";
+  if (msg.includes("Election ended")) return "La elección ha finalizado.";
+  if (msg.includes("Invalid candidate")) return "Opción de voto inválida.";
+  if (msg.includes("user rejected")) return "Transacción rechazada en MetaMask.";
+  return msg.slice(0, 100) || "Error desconocido. Intenta de nuevo.";
+};
+
 function App() {
   const [account, setAccount] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
@@ -98,10 +112,10 @@ function App() {
       const tx = await registry.registerVoter(addr);
       await tx.wait();
       await refreshData(registry, factory);
-      toast.success("✅ Votante registrado");
+      toast.success("✅ Votante registrado correctamente");
     } catch (err) {
       console.error(err);
-      toast.error(`❌ Error: ${err.message || "No se pudo registrar"}`);
+      toast.error(`⚠️ ${getHumanError(err)}`);
     }
   };
 
@@ -113,10 +127,10 @@ function App() {
       const tx = await factory.createElection(name, description, options, startTime, endTime);
       await tx.wait();
       await refreshData(registry, factory);
-      toast.success("✅ Elección creada");
+      toast.success("✅ Elección creada exitosamente");
     } catch (err) {
       console.error(err);
-      toast.error(`❌ Error: ${err.message || "No se pudo crear elección"}`);
+      toast.error(`⚠️ ${getHumanError(err)}`);
     }
   };
 
@@ -127,10 +141,10 @@ function App() {
       const tx = await election.vote(option);
       await tx.wait();
       await refreshData(registry, factory);
-      toast.success("✅ Voto registrado");
+      toast.success("✅ Voto registrado exitosamente");
     } catch (err) {
       console.error(err);
-      toast.error(`❌ Error: ${err.message || "No se pudo votar"}`);
+      toast.error(`⚠️ ${getHumanError(err)}`);
     } finally {
       setLoadingVote(false);
     }
