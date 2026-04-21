@@ -27,8 +27,10 @@ async function main() {
     await regDep.waitForDeployment();
     regAddr = await regDep.getAddress();
     console.log("🚀 Desplegado Registry:", regAddr);
+  } else {
+    console.log("✅ Usando Registry existente:", regAddr);
   }
-  registry = Registry.attach(regAddr);
+  registry = (await ethers.getContractAt("VoterRegistry", regAddr)).connect(owner);
 
   let facAddr = factoryAddress;
   if (!(await hasCode(facAddr))) {
@@ -36,8 +38,10 @@ async function main() {
     await facDep.waitForDeployment();
     facAddr = await facDep.getAddress();
     console.log("🚀 Desplegado Factory:", facAddr);
+  } else {
+    console.log("✅ Usando Factory existente:", facAddr);
   }
-  factory = Factory.attach(facAddr);
+  factory = (await ethers.getContractAt("ElectionFactory", facAddr)).connect(owner);
 
   console.log(`Usando REGISTRY_ADDRESS=${regAddr}`);
   console.log(`Usando FACTORY_ADDRESS=${facAddr}`);
