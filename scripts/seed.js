@@ -67,7 +67,7 @@ async function main() {
     throw err;
   }
 
-  // Crear elección de ejemplo
+  // Crear elección de ejemplo - SINGLE_CHOICE
   try {
     const latest = await ethers.provider.getBlock("latest");
     const startTime = Number(latest.timestamp) + 120;
@@ -75,15 +75,16 @@ async function main() {
     const options = ["Opcion A", "Opcion B"];
 
     const tx = await factory.createElection(
-      "Eleccion Demo",
-      "Creada por script seed",
+      "Eleccion Demo - Unica",
+      "Selección de una sola opción",
       options,
       startTime,
-      endTime
+      endTime,
+      0,
+      1
     );
     const receipt = await tx.wait();
 
-    // obtener dirección de la elección creada
     const event = receipt.logs
       .map((l) => factory.interface.parseLog(l))
       .find((e) => e && e.name === "ElectionCreated");
@@ -93,9 +94,42 @@ async function main() {
       throw new Error("No se encontró evento ElectionCreated en receipt");
     }
 
-    console.log("✅ Elección demo creada:", electionAddress);
+    console.log("✅ Elección demo SINGLE_CHOICE creada:", electionAddress);
   } catch (err) {
-    console.error("❌ Error creando elección:", err.message);
+    console.error("❌ Error creando elección SINGLE_CHOICE:", err.message);
+    throw err;
+  }
+
+  // Crear elección de ejemplo - MULTIPLE_CHOICE
+  try {
+    const latest = await ethers.provider.getBlock("latest");
+    const startTime = Number(latest.timestamp) + 120;
+    const endTime = startTime + 3600;
+    const options = ["Opcion 1", "Opcion 2", "Opcion 3"];
+
+    const tx = await factory.createElection(
+      "Eleccion Demo - Multiple",
+      "Selección de hasta 2 opciones",
+      options,
+      startTime,
+      endTime,
+      1,
+      2
+    );
+    const receipt = await tx.wait();
+
+    const event = receipt.logs
+      .map((l) => factory.interface.parseLog(l))
+      .find((e) => e && e.name === "ElectionCreated");
+    const electionAddress = event?.args?.electionAddress;
+
+    if (!electionAddress) {
+      throw new Error("No se encontró evento ElectionCreated en receipt");
+    }
+
+    console.log("✅ Elección demo MULTIPLE_CHOICE creada:", electionAddress);
+  } catch (err) {
+    console.error("❌ Error creando elección MULTIPLE_CHOICE:", err.message);
     throw err;
   }
 }
