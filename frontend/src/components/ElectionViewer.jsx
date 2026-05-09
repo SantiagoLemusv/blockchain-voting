@@ -21,6 +21,9 @@ export default function ElectionViewer({ elections }) {
                 {election.isActive ? "Activa" : "Finalizada"}
               </span>
             </div>
+            <p className="muted" style={{ margin: "4px 0", fontSize: 12 }}>
+              {election.votingType === 0 ? "Selección Única" : `Selección Múltiple (hasta ${election.maxChoices})`}
+            </p>
             <p className="muted" style={{ margin: "4px 0" }}>
               {formatDate(election.startTime)} — {formatDate(election.endTime)}
             </p>

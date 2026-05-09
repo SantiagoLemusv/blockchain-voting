@@ -24,6 +24,10 @@ const getHumanError = (err) => {
   if (msg.includes("Election not started")) return "La elección aún no ha comenzado.";
   if (msg.includes("Election ended")) return "La elección ha finalizado.";
   if (msg.includes("Invalid candidate")) return "Opción de voto inválida.";
+  if (msg.includes("Wrong voting type")) return "Tipo de votación incorrecto para esta elección.";
+  if (msg.includes("Too many choices")) return "Has seleccionado demasiadas opciones.";
+  if (msg.includes("Duplicate candidate")) return "No puedes seleccionar la misma opción dos veces.";
+  if (msg.includes("Must select at least one")) return "Debes seleccionar al menos una opción.";
   if (msg.includes("user rejected")) return "Transacción rechazada en MetaMask.";
   return msg.slice(0, 100) || "Error desconocido. Intenta de nuevo.";
 };
@@ -82,12 +86,14 @@ function App() {
     for (let idx = 0; idx < addresses.length; idx++) {
       const addr = addresses[idx];
       const election = await getContract(addr, electionAbi);
-      const [name, description, startTime, endTime, active] = await Promise.all([
+      const [name, description, startTime, endTime, active, votingType, maxChoices] = await Promise.all([
         election.name(),
         election.description(),
         election.startTime(),
         election.endTime(),
         election.isActive(),
+        election.votingType(),
+        election.maxChoices(),
       ]);
       const candidates = await election.getCandidates();
       const totalVotes = await election.totalVotes();
@@ -102,6 +108,8 @@ function App() {
         options: candidates.map((c) => c.name),
         votes: candidates.map((c) => Number(c.votes)),
         isActive: active,
+        votingType: Number(votingType),
+        maxChoices: Number(maxChoices),
       });
     }
     setElections(items);
@@ -119,12 +127,12 @@ function App() {
     }
   };
 
-  const handleCreateElection = async ({ name, description, options, startMinutes, durationMinutes }) => {
+  const handleCreateElection = async ({ name, description, options, startMinutes, durationMinutes, votingType, maxChoices }) => {
     try {
       const latest = await factory.runner.provider.getBlock("latest");
       const startTime = Number(latest.timestamp) + startMinutes * 60;
       const endTime = startTime + durationMinutes * 60;
-      const tx = await factory.createElection(name, description, options, startTime, endTime);
+      const tx = await factory.createElection(name, description, options, startTime, endTime, votingType, maxChoices);
       await tx.wait();
       await refreshData(registry, factory);
       toast.success("✅ Elección creada exitosamente");
@@ -134,11 +142,27 @@ function App() {
     }
   };
 
-  const handleVote = async (electionAddress, option) => {
+  const handleVote = async (electionAddress, candidateId) => {
     setLoadingVote(true);
     try {
       const election = await getContract(electionAddress, electionAbi);
-      const tx = await election.vote(option);
+      const tx = await election.voteSingle(candidateId);
+      await tx.wait();
+      await refreshData(registry, factory);
+      toast.success("✅ Voto registrado exitosamente");
+    } catch (err) {
+      console.error(err);
+      toast.error(`⚠️ ${getHumanError(err)}`);
+    } finally {
+      setLoadingVote(false);
+    }
+  };
+
+  const handleVoteMultiple = async (electionAddress, candidateIds) => {
+    setLoadingVote(true);
+    try {
+      const election = await getContract(electionAddress, electionAbi);
+      const tx = await election.voteMultiple(candidateIds);
       await tx.wait();
       await refreshData(registry, factory);
       toast.success("✅ Voto registrado exitosamente");
@@ -179,7 +203,7 @@ function App() {
               <CreateElection isAdmin={isAdmin} onCreate={handleCreateElection} />
             </div>
             <div className="card" style={{ gridColumn: "1 / -1" }}>
-              <CastVote elections={elections} onVote={handleVote} loadingVote={loadingVote} />
+              <CastVote elections={elections} onVote={handleVote} onVoteMultiple={handleVoteMultiple} loadingVote={loadingVote} />
             </div>
             <div className="card" style={{ gridColumn: "1 / -1" }}>
               <ElectionViewer elections={elections} />

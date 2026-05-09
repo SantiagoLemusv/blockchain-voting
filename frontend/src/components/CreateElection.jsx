@@ -6,11 +6,17 @@ export default function CreateElection({ isAdmin, onCreate }) {
   const [options, setOptions] = useState("Opción A,Opción B");
   const [startMinutes, setStartMinutes] = useState(2);
   const [durationMinutes, setDurationMinutes] = useState(60);
+  const [votingType, setVotingType] = useState("0");
+  const [maxChoices, setMaxChoices] = useState(2);
   const [loading, setLoading] = useState(false);
+
+  const optionCount = options.split(",").filter(Boolean).length;
+  const isValid = !name || optionCount < 2;
+  const isValidMaxChoices = votingType === "1" && (maxChoices < 2 || maxChoices > optionCount);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!name || options.split(",").filter(Boolean).length < 2) return;
+    if (isValid || isValidMaxChoices) return;
     setLoading(true);
     await onCreate({
       name,
@@ -18,11 +24,15 @@ export default function CreateElection({ isAdmin, onCreate }) {
       options: options.split(",").map((o) => o.trim()).filter(Boolean),
       startMinutes: Number(startMinutes),
       durationMinutes: Number(durationMinutes),
+      votingType: Number(votingType),
+      maxChoices: votingType === "1" ? Number(maxChoices) : 1,
     });
     setLoading(false);
     setName("");
     setDescription("");
     setOptions("Opción A,Opción B");
+    setVotingType("0");
+    setMaxChoices(2);
   };
 
   return (
@@ -51,6 +61,37 @@ export default function CreateElection({ isAdmin, onCreate }) {
           onChange={(e) => setDescription(e.target.value)}
           disabled={!isAdmin || loading}
         />
+        <div>
+          <div className="small">Tipo de votación</div>
+          <select
+            className="select"
+            value={votingType}
+            onChange={(e) => setVotingType(e.target.value)}
+            disabled={!isAdmin || loading}
+          >
+            <option value="0">Selección Única</option>
+            <option value="1">Selección Múltiple</option>
+          </select>
+        </div>
+        {votingType === "1" && (
+          <div>
+            <div className="small">Máximo de opciones (2-{optionCount})</div>
+            <input
+              type="number"
+              className="input"
+              value={maxChoices}
+              onChange={(e) => setMaxChoices(e.target.value)}
+              disabled={!isAdmin || loading}
+              min={2}
+              max={optionCount}
+            />
+            {isValidMaxChoices && (
+              <p className="muted" style={{ color: "#f59e0b", marginTop: 4, fontSize: 12 }}>
+                Las opciones deben estar entre 2 y {optionCount}
+              </p>
+            )}
+          </div>
+        )}
         <input
           className="input"
           placeholder="Opciones separadas por coma"
@@ -85,7 +126,7 @@ export default function CreateElection({ isAdmin, onCreate }) {
         <button
           type="submit"
           className="btn btn-primary"
-          disabled={!isAdmin || loading || !name || options.split(",").filter(Boolean).length < 2}
+          disabled={!isAdmin || loading || isValid || isValidMaxChoices}
         >
           {loading ? "Creando..." : "Crear elección"}
         </button>
