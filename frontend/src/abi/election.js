@@ -5,13 +5,17 @@ export const electionAbi = [
   "function description() view returns (string)",
   "function startTime() view returns (uint256)",
   "function endTime() view returns (uint256)",
+  "function votingType() view returns (uint8)",
+  "function maxChoices() view returns (uint256)",
   "function isActive() view returns (bool)",
   "function candidateCount() view returns (uint256)",
   "function getCandidate(uint256) view returns (string,uint256)",
   "function getCandidates() view returns (tuple(string name,uint256 votes)[])",
   "function totalVotes() view returns (uint256)",
   "function hasVoted(address) view returns (bool)",
-  "function vote(uint256 candidateId)",
+  "function voteSingle(uint256 candidateId)",
+  "function voteMultiple(uint256[] candidateIds)",
   "event VoteCast(address indexed voter,uint256 indexed candidateId)",
+  "event VoteMultipleCast(address indexed voter,uint256[] candidateIds)",
   "event ElectionClosed(address indexed executor,uint256 totalVotes)"
 ];

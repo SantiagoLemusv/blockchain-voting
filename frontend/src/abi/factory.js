@@ -3,6 +3,6 @@ export const factoryAbi = [
   "function registry() view returns (address)",
   "function getElections() view returns (address[])",
   "function electionsCount() view returns (uint256)",
-  "function createElection(string name,string description,string[] candidates,uint256 startTime,uint256 endTime) returns (address)",
+  "function createElection(string name,string description,string[] candidates,uint256 startTime,uint256 endTime,uint8 votingType,uint256 maxChoices) returns (address)",
   "event ElectionCreated(address indexed electionAddress,string name,uint256 startTime,uint256 endTime)"
 ];
