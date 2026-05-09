@@ -29,8 +29,20 @@ contract ElectionFactory {
         string memory _description,
         string[] memory _candidates,
         uint256 _startTime,
-        uint256 _endTime
+        uint256 _endTime,
+        uint8 _votingType,
+        uint256 _maxChoices
     ) external onlyOwner returns (address) {
+        require(_votingType <= 1, "Invalid voting type");
+
+        uint256 normalizedMaxChoices = _maxChoices;
+        if (_votingType == 0) {
+            normalizedMaxChoices = 1;
+        } else if (_votingType == 1) {
+            require(_maxChoices >= 2, "Multi choice needs at least 2");
+            require(_maxChoices <= _candidates.length, "Max choices exceeds candidates");
+        }
+
         Election election = new Election(
             address(registry),
             msg.sender,
@@ -38,7 +50,9 @@ contract ElectionFactory {
             _description,
             _candidates,
             _startTime,
-            _endTime
+            _endTime,
+            Election.VotingType(_votingType),
+            normalizedMaxChoices
         );
         address electionAddr = address(election);
         elections.push(electionAddr);
