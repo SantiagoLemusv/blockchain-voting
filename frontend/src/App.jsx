@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import ConnectWallet from "./components/ConnectWallet";
-import RegisterVoter from "./components/RegisterVoter";
-import CreateElection from "./components/CreateElection";
+import AdminDashboard from "./components/AdminDashboard";
 import CastVote from "./components/CastVote";
 import ElectionViewer from "./components/ElectionViewer";
 import { getContract, ensureNetwork } from "./utils/web3";
@@ -40,6 +39,7 @@ function App() {
   const [elections, setElections] = useState([]);
   const [totalVoters, setTotalVoters] = useState(0);
   const [loadingVote, setLoadingVote] = useState(false);
+  const [activeTab, setActiveTab] = useState("vote");
 
   useEffect(() => {
     if (window.ethereum) {
@@ -174,9 +174,13 @@ function App() {
     }
   };
 
+  // Switch to "vote" when admin role is not available
+  const effectiveTab = (!isAdmin && activeTab === "admin") ? "vote" : activeTab;
+
   return (
     <div>
       <ToastContainer position="bottom-right" autoClose={4000} />
+
       <header className="app-header">
         <div>
           <h1 className="app-title">🗳️ Sistema de Votación</h1>
@@ -184,6 +188,31 @@ function App() {
         </div>
         <ConnectWallet account={account} onConnect={connectWallet} />
       </header>
+
+      {account && (
+        <nav className="nav-tabs">
+          {isAdmin && (
+            <button
+              className={`nav-tab${effectiveTab === "admin" ? " active" : ""}`}
+              onClick={() => setActiveTab("admin")}
+            >
+              Panel Admin
+            </button>
+          )}
+          <button
+            className={`nav-tab${effectiveTab === "vote" ? " active" : ""}`}
+            onClick={() => setActiveTab("vote")}
+          >
+            Votar
+          </button>
+          <button
+            className={`nav-tab${effectiveTab === "results" ? " active" : ""}`}
+            onClick={() => setActiveTab("results")}
+          >
+            Resultados
+          </button>
+        </nav>
+      )}
 
       <main className="layout">
         {!account ? (
@@ -194,20 +223,32 @@ function App() {
               Conectar MetaMask
             </button>
           </div>
+        ) : effectiveTab === "admin" ? (
+          isAdmin ? (
+            <AdminDashboard
+              elections={elections}
+              totalVoters={totalVoters}
+              onRegister={handleRegister}
+              onCreate={handleCreateElection}
+            />
+          ) : (
+            <div className="card access-denied">
+              <strong>🔒 Acceso restringido</strong>
+              <p>No tienes permisos de administrador. Conecta la wallet del propietario del contrato.</p>
+            </div>
+          )
+        ) : effectiveTab === "vote" ? (
+          <div className="card">
+            <CastVote
+              elections={elections}
+              onVote={handleVote}
+              onVoteMultiple={handleVoteMultiple}
+              loadingVote={loadingVote}
+            />
+          </div>
         ) : (
-          <div className="grid">
-            <div className="card">
-              <RegisterVoter isAdmin={isAdmin} onRegister={handleRegister} />
-            </div>
-            <div className="card">
-              <CreateElection isAdmin={isAdmin} onCreate={handleCreateElection} />
-            </div>
-            <div className="card" style={{ gridColumn: "1 / -1" }}>
-              <CastVote elections={elections} onVote={handleVote} onVoteMultiple={handleVoteMultiple} loadingVote={loadingVote} />
-            </div>
-            <div className="card" style={{ gridColumn: "1 / -1" }}>
-              <ElectionViewer elections={elections} />
-            </div>
+          <div className="card">
+            <ElectionViewer elections={elections} />
           </div>
         )}
       </main>
