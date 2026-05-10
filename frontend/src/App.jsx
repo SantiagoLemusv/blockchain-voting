@@ -4,6 +4,8 @@ import ConnectWallet from "./components/ConnectWallet";
 import AdminDashboard from "./components/AdminDashboard";
 import CastVote from "./components/CastVote";
 import ElectionViewer from "./components/ElectionViewer";
+import LandingPage from "./components/LandingPage";
+import ElectionDetailModal from "./components/ElectionDetailModal";
 import { getContract, ensureNetwork } from "./utils/web3";
 import { registryAbi } from "./abi/registry";
 import { factoryAbi } from "./abi/factory";
@@ -28,7 +30,7 @@ const getHumanError = (err) => {
   if (msg.includes("Duplicate candidate")) return "No puedes seleccionar la misma opción dos veces.";
   if (msg.includes("Must select at least one")) return "Debes seleccionar al menos una opción.";
   if (msg.includes("user rejected")) return "Transacción rechazada en MetaMask.";
-  return msg.slice(0, 100) || "Error desconocido. Intenta de nuevo.";
+  return msg.slice(0, 120) || "Error desconocido. Intenta de nuevo.";
 };
 
 function App() {
@@ -40,13 +42,18 @@ function App() {
   const [totalVoters, setTotalVoters] = useState(0);
   const [loadingVote, setLoadingVote] = useState(false);
   const [activeTab, setActiveTab] = useState("vote");
+  const [selectedElection, setSelectedElection] = useState(null);
+  const [activityLog, setActivityLog] = useState([]);
+
+  const logActivity = (type, payload = {}) => {
+    setActivityLog((prev) => [...prev.slice(-49), { type, payload, timestamp: new Date() }]);
+  };
 
   useEffect(() => {
     if (window.ethereum) {
       window.ethereum.on("accountsChanged", () => connectWallet());
       window.ethereum.on("chainChanged", () => connectWallet());
     }
-    // auto-connect if already authorized
     connectWallet();
   }, []);
 
@@ -120,6 +127,7 @@ function App() {
       const tx = await registry.registerVoter(addr);
       await tx.wait();
       await refreshData(registry, factory);
+      logActivity("voter_registered", { name: addr });
       toast.success("✅ Votante registrado correctamente");
     } catch (err) {
       console.error(err);
@@ -135,6 +143,7 @@ function App() {
       const tx = await factory.createElection(name, description, options, startTime, endTime, votingType, maxChoices);
       await tx.wait();
       await refreshData(registry, factory);
+      logActivity("election_created", { name });
       toast.success("✅ Elección creada exitosamente");
     } catch (err) {
       console.error(err);
@@ -149,6 +158,8 @@ function App() {
       const tx = await election.voteSingle(candidateId);
       await tx.wait();
       await refreshData(registry, factory);
+      const e = elections.find((el) => el.address === electionAddress);
+      logActivity("vote_cast", { name: e?.name || electionAddress });
       toast.success("✅ Voto registrado exitosamente");
     } catch (err) {
       console.error(err);
@@ -165,7 +176,9 @@ function App() {
       const tx = await election.voteMultiple(candidateIds);
       await tx.wait();
       await refreshData(registry, factory);
-      toast.success("✅ Voto registrado exitosamente");
+      const e = elections.find((el) => el.address === electionAddress);
+      logActivity("vote_multiple", { name: e?.name || electionAddress });
+      toast.success("✅ Votos registrados exitosamente");
     } catch (err) {
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
@@ -174,12 +187,18 @@ function App() {
     }
   };
 
-  // Switch to "vote" when admin role is not available
-  const effectiveTab = (!isAdmin && activeTab === "admin") ? "vote" : activeTab;
+  const effectiveTab = !isAdmin && activeTab === "admin" ? "vote" : activeTab;
 
   return (
     <div>
       <ToastContainer position="bottom-right" autoClose={4000} />
+
+      {selectedElection && (
+        <ElectionDetailModal
+          election={selectedElection}
+          onClose={() => setSelectedElection(null)}
+        />
+      )}
 
       <header className="app-header">
         <div>
@@ -216,13 +235,7 @@ function App() {
 
       <main className="layout">
         {!account ? (
-          <div className="card" style={{ textAlign: "center" }}>
-            <h2 className="section-title">Conecta tu wallet</h2>
-            <p className="muted">Necesitas una wallet para interactuar con el sistema.</p>
-            <button className="btn btn-primary" onClick={connectWallet} style={{ marginTop: 12 }}>
-              Conectar MetaMask
-            </button>
-          </div>
+          <LandingPage onConnect={connectWallet} />
         ) : effectiveTab === "admin" ? (
           isAdmin ? (
             <AdminDashboard
@@ -230,6 +243,8 @@ function App() {
               totalVoters={totalVoters}
               onRegister={handleRegister}
               onCreate={handleCreateElection}
+              onSelectElection={setSelectedElection}
+              activityLog={activityLog}
             />
           ) : (
             <div className="card access-denied">
