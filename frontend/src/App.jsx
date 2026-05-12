@@ -5,6 +5,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import CastVote from "./components/CastVote";
 import ElectionViewer from "./components/ElectionViewer";
 import LandingPage from "./components/LandingPage";
+import Home from "./components/Home";
 import ElectionDetailModal from "./components/ElectionDetailModal";
 import { getContract, ensureNetwork } from "./utils/web3";
 import { registryAbi } from "./abi/registry";
@@ -41,7 +42,7 @@ function App() {
   const [elections, setElections] = useState([]);
   const [totalVoters, setTotalVoters] = useState(0);
   const [loadingVote, setLoadingVote] = useState(false);
-  const [activeTab, setActiveTab] = useState("vote");
+  const [activeTab, setActiveTab] = useState("home");
   const [selectedElection, setSelectedElection] = useState(null);
   const [activityLog, setActivityLog] = useState([]);
 
@@ -187,7 +188,7 @@ function App() {
     }
   };
 
-  const effectiveTab = !isAdmin && activeTab === "admin" ? "vote" : activeTab;
+  const effectiveTab = !isAdmin && activeTab === "admin" ? "home" : activeTab;
 
   return (
     <div>
@@ -210,6 +211,12 @@ function App() {
 
       {account && (
         <nav className="nav-tabs">
+          <button
+            className={`nav-tab${effectiveTab === "home" ? " active" : ""}`}
+            onClick={() => setActiveTab("home")}
+          >
+            Inicio
+          </button>
           {isAdmin && (
             <button
               className={`nav-tab${effectiveTab === "admin" ? " active" : ""}`}
@@ -236,6 +243,16 @@ function App() {
       <main className="layout">
         {!account ? (
           <LandingPage onConnect={connectWallet} />
+        ) : effectiveTab === "home" ? (
+          <div className="card">
+            <Home
+              account={account}
+              isAdmin={isAdmin}
+              elections={elections}
+              totalVoters={totalVoters}
+              onNavigate={setActiveTab}
+            />
+          </div>
         ) : effectiveTab === "admin" ? (
           isAdmin ? (
             <AdminDashboard
