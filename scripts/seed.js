@@ -69,9 +69,10 @@ async function main() {
 
   // Crear elección de ejemplo - SINGLE_CHOICE
   try {
-    const latest = await ethers.provider.getBlock("latest");
-    const startTime = Number(latest.timestamp) + 120;
-    const endTime = startTime + 3600;
+    // Usar wall clock real (no latest.timestamp que puede ser del último bloque viejo)
+    const nowSec = Math.floor(Date.now() / 1000);
+    const startTime = nowSec + 30;
+    const endTime = startTime + 86400;
     const options = ["Opcion A", "Opcion B"];
 
     const tx = await factory.createElection(
@@ -102,9 +103,9 @@ async function main() {
 
   // Crear elección de ejemplo - MULTIPLE_CHOICE
   try {
-    const latest = await ethers.provider.getBlock("latest");
-    const startTime = Number(latest.timestamp) + 120;
-    const endTime = startTime + 3600;
+    const nowSec = Math.floor(Date.now() / 1000);
+    const startTime = nowSec + 30;
+    const endTime = startTime + 86400;
     const options = ["Opcion 1", "Opcion 2", "Opcion 3"];
 
     const tx = await factory.createElection(

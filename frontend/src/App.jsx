@@ -137,8 +137,8 @@ function App() {
 
   const handleCreateElection = async ({ name, description, options, startMinutes, durationMinutes, votingType, maxChoices }) => {
     try {
-      const latest = await factory.runner.provider.getBlock("latest");
-      const startTime = Number(latest.timestamp) + startMinutes * 60;
+      const nowSec = Math.floor(Date.now() / 1000);
+      const startTime = nowSec + startMinutes * 60;
       const endTime = startTime + durationMinutes * 60;
       const tx = await factory.createElection(name, description, options, startTime, endTime, votingType, maxChoices);
       await tx.wait();
