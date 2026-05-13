@@ -1,7 +1,7 @@
 export function getElectionState(election) {
-  const now = Date.now() / 1000;
+  const now = Math.floor(Date.now() / 1000);
   if (now < election.startTime) return "upcoming";
-  if (now >= election.startTime && now <= election.endTime && election.isActive) return "active";
+  if (now < election.endTime) return "active";
   return "ended";
 }
 
