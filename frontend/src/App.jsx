@@ -7,6 +7,8 @@ import ElectionViewer from "./components/ElectionViewer";
 import LandingPage from "./components/LandingPage";
 import Home from "./components/Home";
 import ElectionDetailModal from "./components/ElectionDetailModal";
+import ChatBot from "./components/ChatBot";
+import ChatBotButton from "./components/ChatBotButton";
 import { getContract, ensureNetwork } from "./utils/web3";
 import { registryAbi } from "./abi/registry";
 import { factoryAbi } from "./abi/factory";
@@ -46,6 +48,7 @@ function App() {
   const [activeTab, setActiveTab] = useState("home");
   const [selectedElection, setSelectedElection] = useState(null);
   const [activityLog, setActivityLog] = useState([]);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const logActivity = (type, payload = {}) => {
     setActivityLog((prev) => [...prev.slice(-49), { type, payload, timestamp: new Date() }]);
@@ -253,20 +256,20 @@ function App() {
           </button>
           {isAdmin && (
             <button
-              className={`nav-tab${effectiveTab === "admin" ? " active" : ""}`}
+              className={`nav-tab${effectiveTab === "admin" ? " active theme-admin-active" : ""}`}
               onClick={() => setActiveTab("admin")}
             >
               Panel Admin
             </button>
           )}
           <button
-            className={`nav-tab${effectiveTab === "vote" ? " active" : ""}`}
+            className={`nav-tab${effectiveTab === "vote" ? " active theme-vote-active" : ""}`}
             onClick={() => setActiveTab("vote")}
           >
             Votar
           </button>
           <button
-            className={`nav-tab${effectiveTab === "results" ? " active" : ""}`}
+            className={`nav-tab${effectiveTab === "results" ? " active theme-results-active" : ""}`}
             onClick={() => setActiveTab("results")}
           >
             Resultados
@@ -274,11 +277,11 @@ function App() {
         </nav>
       )}
 
-      <main className="layout">
+      <main className={`layout theme-${effectiveTab}`}>
         {!account ? (
           <LandingPage onConnect={connectWallet} />
         ) : effectiveTab === "home" ? (
-          <div className="card">
+          <div className="card card-themed">
             <Home
               account={account}
               isAdmin={isAdmin}
@@ -289,14 +292,17 @@ function App() {
           </div>
         ) : effectiveTab === "admin" ? (
           isAdmin ? (
-            <AdminDashboard
-              elections={elections}
-              totalVoters={totalVoters}
-              onRegister={handleRegister}
-              onCreate={handleCreateElection}
-              onSelectElection={setSelectedElection}
-              activityLog={activityLog}
-            />
+            <div className="card card-themed">
+              <span className="section-context-badge admin">🛡️ Sección administrador</span>
+              <AdminDashboard
+                elections={elections}
+                totalVoters={totalVoters}
+                onRegister={handleRegister}
+                onCreate={handleCreateElection}
+                onSelectElection={setSelectedElection}
+                activityLog={activityLog}
+              />
+            </div>
           ) : (
             <div className="card access-denied">
               <strong>🔒 Acceso restringido</strong>
@@ -304,7 +310,8 @@ function App() {
             </div>
           )
         ) : effectiveTab === "vote" ? (
-          <div className="card">
+          <div className="card card-themed">
+            <span className="section-context-badge vote">🗳️ Sección de votación</span>
             <CastVote
               elections={elections}
               account={account}
@@ -314,11 +321,23 @@ function App() {
             />
           </div>
         ) : (
-          <div className="card">
+          <div className="card card-themed">
+            <span className="section-context-badge results">📊 Sección de resultados</span>
             <ElectionViewer elections={elections} />
           </div>
         )}
       </main>
+
+      {/* Chatbot — siempre visible para usuarios conectados o en landing */}
+      <ChatBot
+        isOpen={chatOpen}
+        onClose={() => setChatOpen(false)}
+        currentSection={effectiveTab}
+      />
+      <ChatBotButton
+        isOpen={chatOpen}
+        onToggle={() => setChatOpen(!chatOpen)}
+      />
     </div>
   );
 }

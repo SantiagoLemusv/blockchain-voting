@@ -20,6 +20,17 @@ export const formatAddress = (address) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
+/**
+ * Devuelve la URL del explorer de bloques para una dirección
+ * según la red configurada. Para localhost no hay explorer público.
+ */
+export const getExplorerUrl = (address, network = "sepolia") => {
+  if (!address) return null;
+  if (network === "sepolia") return `https://sepolia.etherscan.io/address/${address}`;
+  if (network === "mainnet") return `https://etherscan.io/address/${address}`;
+  return null; // localhost u otras redes sin explorer
+};
+
 export const ensureNetwork = async (expected = "sepolia") => {
   if (!window.ethereum) return;
   const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });

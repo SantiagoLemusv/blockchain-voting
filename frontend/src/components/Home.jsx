@@ -1,4 +1,9 @@
 import { getElectionState } from "../utils/electionUtils";
+import { getExplorerUrl } from "../utils/web3";
+
+const REGISTRY_ADDRESS = import.meta.env.VITE_CONTRACT_REGISTRY_ADDRESS;
+const FACTORY_ADDRESS = import.meta.env.VITE_CONTRACT_FACTORY_ADDRESS;
+const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
 export default function Home({ account, isAdmin, elections, totalVoters, onNavigate }) {
   const formatAddress = (addr) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -166,6 +171,62 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
           forma inmutable en la blockchain. Seguro, transparente y auditable en todo momento.
         </p>
       </div>
+
+      {/* Blockchain transparency */}
+      <div className="section-divider" style={{ marginTop: 24 }}>Contratos desplegados (transparencia)</div>
+      <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+        <div style={{ padding: 12, background: "var(--bg)", borderRadius: 8, border: "1px solid var(--border)" }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, marginBottom: 4 }}>
+            VoterRegistry
+          </div>
+          {REGISTRY_ADDRESS &&
+            (getExplorerUrl(REGISTRY_ADDRESS, NETWORK) ? (
+              <a
+                href={getExplorerUrl(REGISTRY_ADDRESS, NETWORK)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contract-pill"
+                style={{ wordBreak: "break-all" }}
+              >
+                <span className="contract-pill-icon">🔗</span>
+                {REGISTRY_ADDRESS.slice(0, 16)}…
+                <span style={{ marginLeft: 4 }}>↗</span>
+              </a>
+            ) : (
+              <span className="contract-pill" style={{ wordBreak: "break-all" }}>
+                <span className="contract-pill-icon">🔗</span>
+                {REGISTRY_ADDRESS}
+              </span>
+            ))}
+        </div>
+        <div style={{ padding: 12, background: "var(--bg)", borderRadius: 8, border: "1px solid var(--border)" }}>
+          <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, marginBottom: 4 }}>
+            ElectionFactory
+          </div>
+          {FACTORY_ADDRESS &&
+            (getExplorerUrl(FACTORY_ADDRESS, NETWORK) ? (
+              <a
+                href={getExplorerUrl(FACTORY_ADDRESS, NETWORK)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contract-pill"
+                style={{ wordBreak: "break-all" }}
+              >
+                <span className="contract-pill-icon">🔗</span>
+                {FACTORY_ADDRESS.slice(0, 16)}…
+                <span style={{ marginLeft: 4 }}>↗</span>
+              </a>
+            ) : (
+              <span className="contract-pill" style={{ wordBreak: "break-all" }}>
+                <span className="contract-pill-icon">🔗</span>
+                {FACTORY_ADDRESS}
+              </span>
+            ))}
+        </div>
+      </div>
+      <p className="small" style={{ marginTop: 6 }}>
+        Estos son los smart contracts que sustentan toda la plataforma. Auditables desde cualquier explorador blockchain.
+      </p>
     </div>
   );
 }

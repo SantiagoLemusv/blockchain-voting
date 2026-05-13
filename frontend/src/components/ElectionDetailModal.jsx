@@ -2,6 +2,9 @@ import { format } from "date-fns";
 import es from "date-fns/locale/es";
 import ElectionStatus from "./ElectionStatus";
 import { getWinner, candidatePercent, getElectionState } from "../utils/electionUtils";
+import { getExplorerUrl } from "../utils/web3";
+
+const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
 export default function ElectionDetailModal({ election, onClose }) {
   if (!election) return null;
@@ -10,6 +13,7 @@ export default function ElectionDetailModal({ election, onClose }) {
   const state = getElectionState(election);
   const winner = getWinner(election);
   const showResults = election.totalVotes > 0;
+  const explorerUrl = getExplorerUrl(election.address, NETWORK);
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -26,14 +30,35 @@ export default function ElectionDetailModal({ election, onClose }) {
         </div>
 
         {/* Badges */}
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
           <ElectionStatus election={election} showCountdown={true} />
           <span className="badge badge-muted">
             {election.votingType === 0 ? "Selección Única" : `Selección Múltiple ≤${election.maxChoices}`}
           </span>
-          <span className="badge badge-muted" style={{ fontFamily: "monospace", fontSize: 11 }}>
-            {election.address.slice(0, 10)}…
-          </span>
+        </div>
+
+        {/* Contract transparency - smart contract address */}
+        <div style={{ marginBottom: 16, padding: "8px 10px", background: "#f0f9ff", borderRadius: 8, border: "1px solid #bae6fd" }}>
+          <div style={{ fontSize: 11, color: "#0369a1", fontWeight: 600, marginBottom: 4 }}>
+            📜 Contrato blockchain (auditable)
+          </div>
+          {explorerUrl ? (
+            <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="contract-pill">
+              <span className="contract-pill-icon">🔗</span>
+              {election.address}
+              <span style={{ marginLeft: 4 }}>↗</span>
+            </a>
+          ) : (
+            <span className="contract-pill">
+              <span className="contract-pill-icon">🔗</span>
+              {election.address}
+            </span>
+          )}
+          <div style={{ fontSize: 10, color: "#0c4a6e", marginTop: 4 }}>
+            {explorerUrl
+              ? "Click para verificar en Etherscan — auditable por cualquier persona"
+              : `Red local (${NETWORK}) — sin explorer público disponible`}
+          </div>
         </div>
 
         {/* Dates + totals */}
