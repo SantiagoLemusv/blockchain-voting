@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { chatbotKnowledge } from "../data/chatbotKnowledge";
+import { mergeKnowledgeWithCustom } from "../utils/chatbotStorage";
 
 /**
  * Renderizado simple de texto con formato.
@@ -63,6 +64,9 @@ export default function ChatBot({ isOpen, onClose, currentSection }) {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Merge knowledge base con preguntas personalizadas del admin
+  const knowledge = useMemo(() => mergeKnowledgeWithCustom(chatbotKnowledge), [isOpen]);
+
   // Auto-scroll al final del chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -74,7 +78,7 @@ export default function ChatBot({ isOpen, onClose, currentSection }) {
       setConversation([
         {
           type: "bot",
-          content: chatbotKnowledge.welcome.message,
+          content: knowledge.welcome.message,
           isWelcome: true,
         },
       ]);
@@ -139,7 +143,7 @@ export default function ChatBot({ isOpen, onClose, currentSection }) {
     setConversation([
       {
         type: "bot",
-        content: chatbotKnowledge.welcome.message,
+        content: knowledge.welcome.message,
         isWelcome: true,
       },
     ]);
@@ -192,10 +196,10 @@ export default function ChatBot({ isOpen, onClose, currentSection }) {
           <div className="chatbot-welcome">
             <div style={{ fontSize: 36, marginBottom: 8 }}>👋</div>
             <h3 style={{ margin: "0 0 6px", fontSize: 16, fontWeight: 700 }}>
-              {chatbotKnowledge.welcome.title}
+              {knowledge.welcome.title}
             </h3>
             <p style={{ margin: 0, fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>
-              {chatbotKnowledge.welcome.message}
+              {knowledge.welcome.message}
             </p>
           </div>
         )}
@@ -240,9 +244,9 @@ export default function ChatBot({ isOpen, onClose, currentSection }) {
         {/* Categories selector (welcome view) */}
         {view === "welcome" && (
           <div style={{ marginTop: 12 }}>
-            <p className="chatbot-suggestion">{chatbotKnowledge.welcome.suggestion}</p>
+            <p className="chatbot-suggestion">{knowledge.welcome.suggestion}</p>
             <div className="chatbot-categories">
-              {chatbotKnowledge.categories.map((cat) => (
+              {knowledge.categories.map((cat) => (
                 <button
                   key={cat.id}
                   className="chatbot-category-btn"

@@ -5,6 +5,7 @@ import SectionVotaciones from "./SectionVotaciones";
 import SectionUsuarios from "./SectionUsuarios";
 import SectionAuditoria from "./SectionAuditoria";
 import SectionResultados from "./SectionResultados";
+import SectionChatbot from "./SectionChatbot";
 
 export default function AdminLayout({
   elections,
@@ -36,6 +37,8 @@ export default function AdminLayout({
         return <SectionAuditoria />;
       case "resultados":
         return <SectionResultados elections={elections} />;
+      case "chatbot":
+        return <SectionChatbot />;
       default:
         return null;
     }

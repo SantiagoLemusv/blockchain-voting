@@ -10,6 +10,7 @@ const SECTIONS = [
   { id: "usuarios", label: "Usuarios", icon: "👥", description: "Registrar votantes" },
   { id: "auditoria", label: "Auditoría", icon: "🔍", description: "Bitácora pública" },
   { id: "resultados", label: "Resultados", icon: "📈", description: "Conteo por elección" },
+  { id: "chatbot", label: "Chatbot", icon: "💬", description: "Editar contenido" },
 ];
 
 export default function Sidebar({ activeSection, onSelectSection }) {

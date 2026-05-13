@@ -1153,6 +1153,27 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ════════════════════════════════════════════════════════
+   CHATBOT EDITOR (admin section)
+   ════════════════════════════════════════════════════════ */
+.chatbot-q-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+.chatbot-q-row.predefined {
+  background: var(--bg);
+  opacity: 0.9;
+}
+.chatbot-q-row.custom {
+  border-left: 3px solid var(--accent-chatbot);
+}
+
+/* ════════════════════════════════════════════════════════
    CONTRACT INFO PILL (transparencia blockchain)
    ════════════════════════════════════════════════════════ */
 .contract-pill {
