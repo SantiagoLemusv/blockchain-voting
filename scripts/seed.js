@@ -68,11 +68,11 @@ async function main() {
   }
 
   // Crear elección de ejemplo - SINGLE_CHOICE
+  // Duración 30 minutos (suficiente para demo en vivo sin agotarse)
   try {
-    // Usar wall clock real (no latest.timestamp que puede ser del último bloque viejo)
     const nowSec = Math.floor(Date.now() / 1000);
-    const startTime = nowSec + 30;
-    const endTime = startTime + 86400;
+    const startTime = nowSec + 60;
+    const endTime = startTime + 1800;
     const options = ["Opcion A", "Opcion B"];
 
     const tx = await factory.createElection(
@@ -104,8 +104,8 @@ async function main() {
   // Crear elección de ejemplo - MULTIPLE_CHOICE
   try {
     const nowSec = Math.floor(Date.now() / 1000);
-    const startTime = nowSec + 30;
-    const endTime = startTime + 86400;
+    const startTime = nowSec + 60;
+    const endTime = startTime + 1800;
     const options = ["Opcion 1", "Opcion 2", "Opcion 3"];
 
     const tx = await factory.createElection(

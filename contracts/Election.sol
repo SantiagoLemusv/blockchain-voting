@@ -80,6 +80,7 @@ contract Election {
     }
 
     function voteSingle(uint256 candidateId) external onlyDuringElection {
+        require(msg.sender != admin, "Admin cannot vote");
         require(votingType == VotingType.SINGLE_CHOICE, "Wrong voting type");
         require(!hasVoted[msg.sender], "Already voted");
         require(registry.isRegistered(msg.sender), "Not authorized");
@@ -92,6 +93,7 @@ contract Election {
     }
 
     function voteMultiple(uint256[] calldata candidateIds) external onlyDuringElection {
+        require(msg.sender != admin, "Admin cannot vote");
         require(votingType == VotingType.MULTIPLE_CHOICE, "Wrong voting type");
         require(!hasVoted[msg.sender], "Already voted");
         require(registry.isRegistered(msg.sender), "Not authorized");

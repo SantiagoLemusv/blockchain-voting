@@ -30,6 +30,7 @@ const getHumanError = (err) => {
   if (msg.includes("Too many choices")) return "Has seleccionado demasiadas opciones.";
   if (msg.includes("Duplicate candidate")) return "No puedes seleccionar la misma opción dos veces.";
   if (msg.includes("Must select at least one")) return "Debes seleccionar al menos una opción.";
+  if (msg.includes("Admin cannot vote")) return "Los administradores no pueden votar en elecciones que ellos mismos crearon.";
   if (msg.includes("user rejected")) return "Transacción rechazada en MetaMask.";
   return msg.slice(0, 120) || "Error desconocido. Intenta de nuevo.";
 };
@@ -79,12 +80,22 @@ function App() {
     setFactory(fac);
 
     const owner = await reg.owner();
-    setIsAdmin(owner.toLowerCase() === (await reg.runner.getAddress()).toLowerCase());
+    const currentAddr = (await reg.runner.getAddress()).toLowerCase();
+    setIsAdmin(owner.toLowerCase() === currentAddr);
 
-    await refreshData(reg, fac);
+    await refreshData(reg, fac, currentAddr);
   };
 
-  const refreshData = async (reg, fac) => {
+  // Auto-refresh de elecciones cada 15 segundos (mantiene estado actualizado en demo)
+  useEffect(() => {
+    if (!registry || !factory) return;
+    const interval = setInterval(() => {
+      refreshData(registry, factory, account);
+    }, 15000);
+    return () => clearInterval(interval);
+  }, [registry, factory, account]);
+
+  const refreshData = async (reg, fac, currentAccount) => {
     if (!reg || !fac) return;
     const total = await reg.getTotalRegistered();
     setTotalVoters(Number(total));
@@ -94,7 +105,7 @@ function App() {
     for (let idx = 0; idx < addresses.length; idx++) {
       const addr = addresses[idx];
       const election = await getContract(addr, electionAbi);
-      const [name, description, startTime, endTime, active, votingType, maxChoices] = await Promise.all([
+      const [name, description, startTime, endTime, active, votingType, maxChoices, electionAdmin] = await Promise.all([
         election.name(),
         election.description(),
         election.startTime(),
@@ -102,9 +113,12 @@ function App() {
         election.isActive(),
         election.votingType(),
         election.maxChoices(),
+        election.admin(),
       ]);
       const candidates = await election.getCandidates();
       const totalVotes = await election.totalVotes();
+      const acc = currentAccount || account;
+      const hasVoted = acc ? await election.hasVoted(acc) : false;
       items.push({
         id: idx + 1,
         address: addr,
@@ -118,35 +132,47 @@ function App() {
         isActive: active,
         votingType: Number(votingType),
         maxChoices: Number(maxChoices),
+        admin: electionAdmin.toLowerCase(),
+        hasVoted,
       });
     }
     setElections(items);
   };
 
+  const shortHash = (hash) => `${hash.slice(0, 8)}…${hash.slice(-6)}`;
+
   const handleRegister = async (addr) => {
+    let pendingToast;
     try {
       const tx = await registry.registerVoter(addr);
+      pendingToast = toast.info(`⏳ Registrando votante... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       await tx.wait();
-      await refreshData(registry, factory);
+      toast.dismiss(pendingToast);
+      await refreshData(registry, factory, account);
       logActivity("voter_registered", { name: addr });
-      toast.success("✅ Votante registrado correctamente");
+      toast.success(`✅ Votante registrado · ${shortHash(tx.hash)}`);
     } catch (err) {
+      if (pendingToast) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     }
   };
 
   const handleCreateElection = async ({ name, description, options, startMinutes, durationMinutes, votingType, maxChoices }) => {
+    let pendingToast;
     try {
       const nowSec = Math.floor(Date.now() / 1000);
       const startTime = nowSec + startMinutes * 60;
       const endTime = startTime + durationMinutes * 60;
       const tx = await factory.createElection(name, description, options, startTime, endTime, votingType, maxChoices);
+      pendingToast = toast.info(`⏳ Creando elección... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       await tx.wait();
-      await refreshData(registry, factory);
+      toast.dismiss(pendingToast);
+      await refreshData(registry, factory, account);
       logActivity("election_created", { name });
-      toast.success("✅ Elección creada exitosamente");
+      toast.success(`✅ Elección "${name}" creada · ${shortHash(tx.hash)}`);
     } catch (err) {
+      if (pendingToast) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     }
@@ -154,15 +180,19 @@ function App() {
 
   const handleVote = async (electionAddress, candidateId) => {
     setLoadingVote(true);
+    let pendingToast;
     try {
       const election = await getContract(electionAddress, electionAbi);
       const tx = await election.voteSingle(candidateId);
+      pendingToast = toast.info(`⏳ Enviando voto... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       await tx.wait();
-      await refreshData(registry, factory);
+      toast.dismiss(pendingToast);
+      await refreshData(registry, factory, account);
       const e = elections.find((el) => el.address === electionAddress);
       logActivity("vote_cast", { name: e?.name || electionAddress });
-      toast.success("✅ Voto registrado exitosamente");
+      toast.success(`✅ Voto registrado · ${shortHash(tx.hash)}`);
     } catch (err) {
+      if (pendingToast) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     } finally {
@@ -172,15 +202,19 @@ function App() {
 
   const handleVoteMultiple = async (electionAddress, candidateIds) => {
     setLoadingVote(true);
+    let pendingToast;
     try {
       const election = await getContract(electionAddress, electionAbi);
       const tx = await election.voteMultiple(candidateIds);
+      pendingToast = toast.info(`⏳ Enviando ${candidateIds.length} votos... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       await tx.wait();
-      await refreshData(registry, factory);
+      toast.dismiss(pendingToast);
+      await refreshData(registry, factory, account);
       const e = elections.find((el) => el.address === electionAddress);
       logActivity("vote_multiple", { name: e?.name || electionAddress });
-      toast.success("✅ Votos registrados exitosamente");
+      toast.success(`✅ ${candidateIds.length} votos registrados · ${shortHash(tx.hash)}`);
     } catch (err) {
+      if (pendingToast) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     } finally {
@@ -273,6 +307,7 @@ function App() {
           <div className="card">
             <CastVote
               elections={elections}
+              account={account}
               onVote={handleVote}
               onVoteMultiple={handleVoteMultiple}
               loadingVote={loadingVote}

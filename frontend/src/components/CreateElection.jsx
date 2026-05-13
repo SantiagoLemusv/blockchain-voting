@@ -44,11 +44,22 @@ export default function CreateElection({ isAdmin, onCreate }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
+  const MIN_DURATION = 5;
+  const MIN_START = 1;
+
   const optionCount = parseOptions(options).length;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validateForm({ name, description, options, votingType, maxChoices });
+
+    if (Number(startMinutes) < MIN_START) {
+      errs.startMinutes = `El inicio debe ser de al menos ${MIN_START} minuto.`;
+    }
+    if (Number(durationMinutes) < MIN_DURATION) {
+      errs.durationMinutes = `La duración mínima es ${MIN_DURATION} minutos para asegurar tiempo suficiente para votar.`;
+    }
+
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
@@ -163,30 +174,35 @@ export default function CreateElection({ isAdmin, onCreate }) {
         </div>
 
         {/* Tiempos */}
-        <div className="flex-between" style={{ gap: 8 }}>
+        <div className="flex-between" style={{ gap: 8, alignItems: "flex-start" }}>
           <div style={{ flex: 1 }}>
-            <div className="small">Inicio en (min)</div>
+            <div className="small">Inicio en (min) — recomendado 2+</div>
             <input
               type="number"
-              className="input"
+              className={`input${errors.startMinutes ? " input-error" : ""}`}
               value={startMinutes}
-              onChange={(e) => setStartMinutes(e.target.value)}
+              onChange={(e) => { setStartMinutes(e.target.value); setErrors((p) => ({ ...p, startMinutes: "" })); }}
               disabled={!isAdmin || loading}
-              min={1}
+              min={MIN_START}
             />
+            {errors.startMinutes && <span className="form-error">{errors.startMinutes}</span>}
           </div>
           <div style={{ flex: 1 }}>
-            <div className="small">Duración (min)</div>
+            <div className="small">Duración (min) — mínimo {MIN_DURATION}</div>
             <input
               type="number"
-              className="input"
+              className={`input${errors.durationMinutes ? " input-error" : ""}`}
               value={durationMinutes}
-              onChange={(e) => setDurationMinutes(e.target.value)}
+              onChange={(e) => { setDurationMinutes(e.target.value); setErrors((p) => ({ ...p, durationMinutes: "" })); }}
               disabled={!isAdmin || loading}
-              min={5}
+              min={MIN_DURATION}
             />
+            {errors.durationMinutes && <span className="form-error">{errors.durationMinutes}</span>}
           </div>
         </div>
+        <p className="small" style={{ marginTop: -4 }}>
+          💡 La elección estará disponible para votar por {durationMinutes || "?"} minutos a partir de su inicio.
+        </p>
 
         <button
           type="submit"

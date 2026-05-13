@@ -2,7 +2,7 @@ import { useState } from "react";
 import ElectionStatus from "./ElectionStatus";
 import { getElectionState } from "../utils/electionUtils";
 
-export default function CastVote({ elections, onVote, onVoteMultiple, loadingVote }) {
+export default function CastVote({ elections, account, onVote, onVoteMultiple, loadingVote }) {
   const [selectedElection, setSelectedElection] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState(new Set());
@@ -17,7 +17,9 @@ export default function CastVote({ elections, onVote, onVoteMultiple, loadingVot
   const isSingle = current?.votingType === 0;
   const isMultiple = current?.votingType === 1;
   const currentState = current ? getElectionState(current) : null;
-  const canVote = currentState === "active";
+  const isAdminOfElection = current && account && current.admin === account.toLowerCase();
+  const hasAlreadyVoted = current?.hasVoted === true;
+  const canVote = currentState === "active" && !isAdminOfElection && !hasAlreadyVoted;
 
   const handleCheckboxChange = (idx) => {
     if (!canVote) return;
@@ -109,6 +111,48 @@ export default function CastVote({ elections, onVote, onVoteMultiple, loadingVot
             </div>
             <ElectionStatus election={current} showCountdown={true} />
           </div>
+
+          {/* Admin restriction banner */}
+          {isAdminOfElection && (
+            <div
+              style={{
+                background: "#eef2ff",
+                border: "1px solid #c7d2fe",
+                borderRadius: 8,
+                padding: "12px 14px",
+                fontSize: 14,
+                color: "#4338ca",
+                marginBottom: 12,
+              }}
+            >
+              <strong>🛡️ Restricción del sistema</strong>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: "#4f46e5" }}>
+                Los administradores no pueden votar en elecciones que ellos mismos crearon.
+                Esto garantiza la imparcialidad del proceso democrático.
+              </p>
+            </div>
+          )}
+
+          {/* Already voted banner */}
+          {hasAlreadyVoted && !isAdminOfElection && (
+            <div
+              style={{
+                background: "#ecfdf3",
+                border: "1px solid #bbf7d0",
+                borderRadius: 8,
+                padding: "12px 14px",
+                fontSize: 14,
+                color: "#166534",
+                marginBottom: 12,
+              }}
+            >
+              <strong>✅ Ya emitiste tu voto</strong>
+              <p style={{ margin: "4px 0 0", fontSize: 13 }}>
+                Tu voto ya fue registrado en blockchain. Solo puedes votar una vez por elección.
+                Consulta los resultados en la pestaña <strong>Resultados</strong>.
+              </p>
+            </div>
+          )}
 
           {/* Voting UI or blocked state */}
           {currentState === "upcoming" && (

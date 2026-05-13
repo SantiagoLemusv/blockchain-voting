@@ -128,6 +128,14 @@ describe("Modular Voting Platform", function () {
       expect(candidate1[1]).to.equal(1);
       expect(await election.totalVotes()).to.equal(3);
     });
+
+    it("Impide al administrador votar en su propia elección (voteSingle)", async function () {
+      await registry.registerVoter(owner.address);
+      await ethers.provider.send("evm_increaseTime", [200]);
+      await ethers.provider.send("evm_mine", []);
+
+      await expect(election.connect(owner).voteSingle(0)).to.be.revertedWith("Admin cannot vote");
+    });
   });
 
   describe("Selección Múltiple (MULTIPLE_CHOICE)", function () {
@@ -225,6 +233,14 @@ describe("Modular Voting Platform", function () {
       await ethers.provider.send("evm_mine", []);
 
       await expect(election.connect(voter1).voteMultiple([])).to.be.revertedWith("Must select at least one");
+    });
+
+    it("Impide al administrador votar en su propia elección (voteMultiple)", async function () {
+      await registry.registerVoter(owner.address);
+      await ethers.provider.send("evm_increaseTime", [200]);
+      await ethers.provider.send("evm_mine", []);
+
+      await expect(election.connect(owner).voteMultiple([0, 1])).to.be.revertedWith("Admin cannot vote");
     });
   });
 });
