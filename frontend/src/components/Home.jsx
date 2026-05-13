@@ -1,11 +1,21 @@
+import { useState, useEffect } from "react";
 import { getElectionState } from "../utils/electionUtils";
 import { getExplorerUrl } from "../utils/web3";
+import { getReceipts } from "../utils/receiptStorage";
+import HashVisual from "./HashVisual";
+import VoteReceipt from "./VoteReceipt";
 
 const REGISTRY_ADDRESS = import.meta.env.VITE_CONTRACT_REGISTRY_ADDRESS;
 const FACTORY_ADDRESS = import.meta.env.VITE_CONTRACT_FACTORY_ADDRESS;
 const NETWORK = import.meta.env.VITE_NETWORK || "sepolia";
 
 export default function Home({ account, isAdmin, elections, totalVoters, onNavigate }) {
+  const [receipts, setReceipts] = useState([]);
+  const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+  useEffect(() => {
+    setReceipts(getReceipts(account));
+  }, [account]);
   const formatAddress = (addr) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
   const active = elections.filter((e) => getElectionState(e) === "active").length;
   const upcoming = elections.filter((e) => getElectionState(e) === "upcoming").length;
@@ -163,6 +173,46 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
         )}
       </div>
 
+      {/* Comprobantes recientes del votante */}
+      {receipts.length > 0 && (
+        <>
+          <div className="section-divider">Mis comprobantes de voto ({receipts.length})</div>
+          <p className="small" style={{ marginTop: -8, marginBottom: 10 }}>
+            🔐 Solo tú puedes ver tus comprobantes — almacenados localmente en tu navegador.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {receipts.slice(0, 5).map((r, i) => (
+              <button
+                key={`${r.txHash}-${i}`}
+                className="receipt-row-card"
+                onClick={() => setSelectedReceipt(r)}
+              >
+                <HashVisual hash={r.txHash} size={48} />
+                <div style={{ flex: 1, minWidth: 0, textAlign: "left" }}>
+                  <strong style={{ fontSize: 13 }}>{r.electionName}</strong>
+                  <div className="small" style={{ marginTop: 2, fontFamily: "monospace" }}>
+                    {r.txHash.slice(0, 16)}…
+                  </div>
+                  {r.blockNumber && (
+                    <div className="small" style={{ fontSize: 10 }}>
+                      Bloque #{r.blockNumber}
+                    </div>
+                  )}
+                </div>
+                <span style={{ fontSize: 12, color: "var(--accent-vote)", fontWeight: 600 }}>
+                  Ver →
+                </span>
+              </button>
+            ))}
+          </div>
+          {receipts.length > 5 && (
+            <p className="small" style={{ marginTop: 8, textAlign: "center" }}>
+              Tienes {receipts.length - 5} comprobantes más guardados.
+            </p>
+          )}
+        </>
+      )}
+
       {/* Info section */}
       <div style={{ marginTop: 32, padding: 20, background: "#f0f9ff", borderRadius: 12 }}>
         <strong style={{ color: "#0369a1" }}>💡 ¿Qué es esto?</strong>
@@ -227,6 +277,10 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
       <p className="small" style={{ marginTop: 6 }}>
         Estos son los smart contracts que sustentan toda la plataforma. Auditables desde cualquier explorador blockchain.
       </p>
+
+      {selectedReceipt && (
+        <VoteReceipt receipt={selectedReceipt} onClose={() => setSelectedReceipt(null)} />
+      )}
     </div>
   );
 }

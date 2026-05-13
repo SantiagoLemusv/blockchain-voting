@@ -1,14 +1,16 @@
 import { useState, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import ConnectWallet from "./components/ConnectWallet";
-import AdminDashboard from "./components/AdminDashboard";
+import AdminLayout from "./components/admin/AdminLayout";
 import CastVote from "./components/CastVote";
 import ElectionViewer from "./components/ElectionViewer";
 import LandingPage from "./components/LandingPage";
 import Home from "./components/Home";
 import ElectionDetailModal from "./components/ElectionDetailModal";
+import VoteReceipt from "./components/VoteReceipt";
 import ChatBot from "./components/ChatBot";
 import ChatBotButton from "./components/ChatBotButton";
+import { saveReceipt } from "./utils/receiptStorage";
 import { getContract, ensureNetwork } from "./utils/web3";
 import { registryAbi } from "./abi/registry";
 import { factoryAbi } from "./abi/factory";
@@ -49,6 +51,7 @@ function App() {
   const [selectedElection, setSelectedElection] = useState(null);
   const [activityLog, setActivityLog] = useState([]);
   const [chatOpen, setChatOpen] = useState(false);
+  const [voteReceipt, setVoteReceipt] = useState(null);
 
   const logActivity = (type, payload = {}) => {
     setActivityLog((prev) => [...prev.slice(-49), { type, payload, timestamp: new Date() }]);
@@ -181,6 +184,17 @@ function App() {
     }
   };
 
+  const buildReceipt = async (tx, receiptObj, electionAddress) => {
+    const e = elections.find((el) => el.address === electionAddress);
+    return {
+      txHash: tx.hash,
+      blockNumber: receiptObj?.blockNumber,
+      electionAddress,
+      electionName: e?.name || "Elección",
+      savedAt: new Date().toISOString(),
+    };
+  };
+
   const handleVote = async (electionAddress, candidateId) => {
     setLoadingVote(true);
     let pendingToast;
@@ -188,12 +202,17 @@ function App() {
       const election = await getContract(electionAddress, electionAbi);
       const tx = await election.voteSingle(candidateId);
       pendingToast = toast.info(`⏳ Enviando voto... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
-      await tx.wait();
+      const txReceipt = await tx.wait();
       toast.dismiss(pendingToast);
       await refreshData(registry, factory, account);
       const e = elections.find((el) => el.address === electionAddress);
       logActivity("vote_cast", { name: e?.name || electionAddress });
       toast.success(`✅ Voto registrado · ${shortHash(tx.hash)}`);
+
+      // Generar y mostrar comprobante
+      const receipt = await buildReceipt(tx, txReceipt, electionAddress);
+      saveReceipt(account, receipt);
+      setVoteReceipt(receipt);
     } catch (err) {
       if (pendingToast) toast.dismiss(pendingToast);
       console.error(err);
@@ -210,12 +229,17 @@ function App() {
       const election = await getContract(electionAddress, electionAbi);
       const tx = await election.voteMultiple(candidateIds);
       pendingToast = toast.info(`⏳ Enviando ${candidateIds.length} votos... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
-      await tx.wait();
+      const txReceipt = await tx.wait();
       toast.dismiss(pendingToast);
       await refreshData(registry, factory, account);
       const e = elections.find((el) => el.address === electionAddress);
       logActivity("vote_multiple", { name: e?.name || electionAddress });
       toast.success(`✅ ${candidateIds.length} votos registrados · ${shortHash(tx.hash)}`);
+
+      // Generar y mostrar comprobante
+      const receipt = await buildReceipt(tx, txReceipt, electionAddress);
+      saveReceipt(account, receipt);
+      setVoteReceipt(receipt);
     } catch (err) {
       if (pendingToast) toast.dismiss(pendingToast);
       console.error(err);
@@ -236,6 +260,10 @@ function App() {
           election={selectedElection}
           onClose={() => setSelectedElection(null)}
         />
+      )}
+
+      {voteReceipt && (
+        <VoteReceipt receipt={voteReceipt} onClose={() => setVoteReceipt(null)} />
       )}
 
       <header className="app-header">
@@ -292,17 +320,14 @@ function App() {
           </div>
         ) : effectiveTab === "admin" ? (
           isAdmin ? (
-            <div className="card card-themed">
-              <span className="section-context-badge admin">🛡️ Sección administrador</span>
-              <AdminDashboard
-                elections={elections}
-                totalVoters={totalVoters}
-                onRegister={handleRegister}
-                onCreate={handleCreateElection}
-                onSelectElection={setSelectedElection}
-                activityLog={activityLog}
-              />
-            </div>
+            <AdminLayout
+              elections={elections}
+              totalVoters={totalVoters}
+              onRegister={handleRegister}
+              onCreate={handleCreateElection}
+              onSelectElection={setSelectedElection}
+              activityLog={activityLog}
+            />
           ) : (
             <div className="card access-denied">
               <strong>🔒 Acceso restringido</strong>

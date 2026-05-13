@@ -1,11 +1,13 @@
 import { useState } from "react";
 import ElectionStatus from "./ElectionStatus";
+import VoteConfirmModal from "./VoteConfirmModal";
 import { getElectionState } from "../utils/electionUtils";
 
 export default function CastVote({ elections, account, onVote, onVoteMultiple, loadingVote }) {
   const [selectedElection, setSelectedElection] = useState(null);
   const [selectedOption, setSelectedOption] = useState(null);
   const [selectedOptions, setSelectedOptions] = useState(new Set());
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleElectionChange = (addr) => {
     setSelectedElection(addr);
@@ -34,8 +36,15 @@ export default function CastVote({ elections, account, onVote, onVoteMultiple, l
 
   const handleVoteClick = () => {
     if (!canVote) return;
-    if (isSingle) onVote(current.address, selectedOption);
-    else if (isMultiple) onVoteMultiple(current.address, Array.from(selectedOptions));
+    setShowConfirm(true);
+  };
+
+  const handleConfirmVote = async () => {
+    if (isSingle) await onVote(current.address, selectedOption);
+    else if (isMultiple) await onVoteMultiple(current.address, Array.from(selectedOptions));
+    setShowConfirm(false);
+    setSelectedOption(null);
+    setSelectedOptions(new Set());
   };
 
   const isSubmitDisabled =
@@ -253,9 +262,20 @@ export default function CastVote({ elections, account, onVote, onVoteMultiple, l
             Enviando a blockchain...
           </span>
         ) : (
-          "Emitir Voto"
+          "Revisar y emitir voto"
         )}
       </button>
+
+      {showConfirm && (
+        <VoteConfirmModal
+          election={current}
+          selectedSingle={selectedOption}
+          selectedMultiple={selectedOptions}
+          onConfirm={handleConfirmVote}
+          onCancel={() => setShowConfirm(false)}
+          loading={loadingVote}
+        />
+      )}
     </div>
   );
 }
