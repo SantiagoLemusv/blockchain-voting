@@ -21,15 +21,56 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
   const upcoming = elections.filter((e) => getElectionState(e) === "upcoming").length;
   const ended = elections.filter((e) => getElectionState(e) === "ended").length;
 
+  const [copied, setCopied] = useState(false);
+  const handleCopyAddress = () => {
+    navigator.clipboard.writeText(account);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div>
       {/* Hero section */}
       <div style={{ textAlign: "center", paddingBottom: 32, marginBottom: 32 }}>
-        <h1 className="landing-title" style={{ marginBottom: 8 }}>
-          Bienvenido, <span className="landing-highlight">{formatAddress(account)}</span>
+        <p className="small" style={{ margin: "0 0 12px", color: "var(--muted)", letterSpacing: "0.5px" }}>
+          TU BILLETERA
+        </p>
+        <div
+          onClick={handleCopyAddress}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "12px 16px",
+            background: "var(--bg-accent)",
+            borderRadius: 12,
+            border: "1px solid var(--primary)",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            marginBottom: 20,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.boxShadow = "0 4px 12px rgba(79, 70, 229, 0.15)";
+            e.currentTarget.style.transform = "translateY(-2px)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <span style={{ fontSize: 18 }}>👛</span>
+          <code style={{ fontFamily: "monospace", fontWeight: 600, color: "var(--primary)" }}>
+            {formatAddress(account)}
+          </code>
+          <span style={{ fontSize: 12, color: "var(--muted)" }}>
+            {copied ? "✓ Copiado" : "Copiar"}
+          </span>
+        </div>
+        <h1 className="landing-title" style={{ marginBottom: 12, marginTop: 0 }}>
+          Sistema de votación descentralizado
         </h1>
         <p className="landing-desc" style={{ margin: 0 }}>
-          Sistema de votación descentralizado. Ya estás conectado y listo para participar.
+          Ya estás conectado y listo para participar de forma segura e inmutable.
         </p>
       </div>
 
