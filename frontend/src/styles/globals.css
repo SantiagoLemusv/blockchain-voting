@@ -322,6 +322,7 @@ a { color: inherit; text-decoration: none; }
   max-width: 520px;
   margin: 0 auto 28px;
   line-height: 1.7;
+  text-align: center;
 }
 .landing-cta { font-size: 15px; padding: 12px 28px; }
 .landing-features {
