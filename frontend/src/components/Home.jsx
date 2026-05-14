@@ -69,7 +69,7 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
         <h1 className="landing-title" style={{ marginBottom: 12, marginTop: 0 }}>
           Sistema de votación descentralizado
         </h1>
-        <p className="landing-desc" style={{ margin: 0 }}>
+        <p className="landing-desc" style={{ margin: 0, textAlign: "center" }}>
           Ya estás conectado y listo para participar de forma segura e inmutable.
         </p>
       </div>
