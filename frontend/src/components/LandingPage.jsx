@@ -27,7 +27,7 @@ export default function LandingPage({ onConnect }) {
       <div className="landing-hero">
         <div className="landing-badge">Plataforma Descentralizada · Ethereum</div>
         <h1 className="landing-title">
-          Sistema de Votación <span className="landing-highlight">Blockchain</span>
+          Plataforma de Votación <span className="landing-highlight">Blockchain</span>
         </h1>
         <p className="landing-desc">
           Emite y administra votos de manera transparente, segura e inmutable sobre la red Ethereum.

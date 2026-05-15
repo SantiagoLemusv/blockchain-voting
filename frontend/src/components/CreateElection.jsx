@@ -44,8 +44,8 @@ export default function CreateElection({ isAdmin, onCreate }) {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const MIN_DURATION = 5;
-  const MIN_START = 1;
+  const MIN_DURATION = 30;
+  const MIN_START = 2;
 
   const optionCount = parseOptions(options).length;
 
@@ -54,10 +54,10 @@ export default function CreateElection({ isAdmin, onCreate }) {
     const errs = validateForm({ name, description, options, votingType, maxChoices });
 
     if (Number(startMinutes) < MIN_START) {
-      errs.startMinutes = `El inicio debe ser de al menos ${MIN_START} minuto.`;
+      errs.startMinutes = `El inicio debe ser de al menos ${MIN_START} minutos para que la transacción se confirme antes del inicio.`;
     }
     if (Number(durationMinutes) < MIN_DURATION) {
-      errs.durationMinutes = `La duración mínima es ${MIN_DURATION} minutos para asegurar tiempo suficiente para votar.`;
+      errs.durationMinutes = `La duración mínima es ${MIN_DURATION} minutos. Duraciones más cortas pueden finalizar antes de que los votantes alcancen a votar.`;
     }
 
     if (Object.keys(errs).length > 0) {
@@ -176,7 +176,7 @@ export default function CreateElection({ isAdmin, onCreate }) {
         {/* Tiempos */}
         <div className="flex-between" style={{ gap: 8, alignItems: "flex-start" }}>
           <div style={{ flex: 1 }}>
-            <div className="small">Inicio en (min) — recomendado 2+</div>
+            <div className="small">Inicio en (min) — mínimo {MIN_START}</div>
             <input
               type="number"
               className={`input${errors.startMinutes ? " input-error" : ""}`}
@@ -188,7 +188,7 @@ export default function CreateElection({ isAdmin, onCreate }) {
             {errors.startMinutes && <span className="form-error">{errors.startMinutes}</span>}
           </div>
           <div style={{ flex: 1 }}>
-            <div className="small">Duración (min) — mínimo {MIN_DURATION}</div>
+            <div className="small">Duración (min) — mínimo {MIN_DURATION}, recomendado 60</div>
             <input
               type="number"
               className={`input${errors.durationMinutes ? " input-error" : ""}`}
@@ -202,6 +202,7 @@ export default function CreateElection({ isAdmin, onCreate }) {
         </div>
         <p className="small" style={{ marginTop: -4 }}>
           💡 La elección estará disponible para votar por {durationMinutes || "?"} minutos a partir de su inicio.
+          Duraciones cortas pueden finalizar antes de que los votantes alcancen a participar.
         </p>
 
         <button

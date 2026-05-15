@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import es from "date-fns/locale/es";
 import ActivityFeed from "../ActivityFeed";
+import DashboardChart from "./DashboardChart";
 import { getElectionState, participationRate } from "../../utils/electionUtils";
 
 export default function SectionResumen({ elections, totalVoters, activityLog, onSelectElection, onNavigateSection }) {
@@ -11,7 +12,14 @@ export default function SectionResumen({ elections, totalVoters, activityLog, on
   const latest = elections.length > 0 ? elections[elections.length - 1] : null;
   const overallParticipation = participationRate(totalVotes, totalVoters);
 
-  const formatDate = (ts) => format(new Date(ts * 1000), "dd MMM HH:mm", { locale: es });
+  const formatDate = (ts) => {
+    if (!ts || isNaN(ts)) return "—";
+    try {
+      return format(new Date(ts * 1000), "dd MMM HH:mm", { locale: es });
+    } catch {
+      return "—";
+    }
+  };
 
   return (
     <div>
@@ -47,6 +55,9 @@ export default function SectionResumen({ elections, totalVoters, activityLog, on
           <div className="stat-label">Votos emitidos</div>
         </div>
       </div>
+
+      {/* Gráfica visual */}
+      <DashboardChart elections={elections} />
 
       {/* Participación */}
       {totalVoters > 0 && totalVotes > 0 && (

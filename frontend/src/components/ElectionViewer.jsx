@@ -4,7 +4,14 @@ import ElectionStatus from "./ElectionStatus";
 import { getWinner, candidatePercent, getElectionState } from "../utils/electionUtils";
 
 export default function ElectionViewer({ elections }) {
-  const formatDate = (ts) => format(new Date(ts * 1000), "dd MMM yyyy HH:mm", { locale: es });
+  const formatDate = (ts) => {
+    if (!ts || isNaN(ts)) return "—";
+    try {
+      return format(new Date(ts * 1000), "dd MMM yyyy HH:mm", { locale: es });
+    } catch {
+      return "—";
+    }
+  };
 
   if (elections.length === 0) {
     return (

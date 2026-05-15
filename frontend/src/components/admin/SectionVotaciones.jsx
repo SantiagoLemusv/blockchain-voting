@@ -4,7 +4,14 @@ import CreateElection from "../CreateElection";
 import ElectionStatus from "../ElectionStatus";
 
 export default function SectionVotaciones({ elections, onCreate, onSelectElection }) {
-  const formatDate = (ts) => format(new Date(ts * 1000), "dd MMM HH:mm", { locale: es });
+  const formatDate = (ts) => {
+    if (!ts || isNaN(ts)) return "—";
+    try {
+      return format(new Date(ts * 1000), "dd MMM HH:mm", { locale: es });
+    } catch {
+      return "—";
+    }
+  };
 
   return (
     <div>

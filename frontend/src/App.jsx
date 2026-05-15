@@ -10,6 +10,7 @@ import ElectionDetailModal from "./components/ElectionDetailModal";
 import VoteReceipt from "./components/VoteReceipt";
 import ChatBot from "./components/ChatBot";
 import ChatBotButton from "./components/ChatBotButton";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { saveReceipt } from "./utils/receiptStorage";
 import { getContract, ensureNetwork } from "./utils/web3";
 import { registryAbi } from "./abi/registry";
@@ -103,46 +104,55 @@ function App() {
 
   const refreshData = async (reg, fac, currentAccount) => {
     if (!reg || !fac) return;
-    const total = await reg.getTotalRegistered();
-    setTotalVoters(Number(total));
+    try {
+      const total = await reg.getTotalRegistered();
+      setTotalVoters(Number(total));
 
-    const addresses = await fac.getElections();
-    const items = [];
-    for (let idx = 0; idx < addresses.length; idx++) {
-      const addr = addresses[idx];
-      const election = await getContract(addr, electionAbi);
-      const [name, description, startTime, endTime, active, votingType, maxChoices, electionAdmin] = await Promise.all([
-        election.name(),
-        election.description(),
-        election.startTime(),
-        election.endTime(),
-        election.isActive(),
-        election.votingType(),
-        election.maxChoices(),
-        election.admin(),
-      ]);
-      const candidates = await election.getCandidates();
-      const totalVotes = await election.totalVotes();
-      const acc = currentAccount || account;
-      const hasVoted = acc ? await election.hasVoted(acc) : false;
-      items.push({
-        id: idx + 1,
-        address: addr,
-        name,
-        description,
-        startTime: Number(startTime),
-        endTime: Number(endTime),
-        totalVotes: Number(totalVotes),
-        options: candidates.map((c) => c.name),
-        votes: candidates.map((c) => Number(c.votes)),
-        isActive: active,
-        votingType: Number(votingType),
-        maxChoices: Number(maxChoices),
-        admin: electionAdmin.toLowerCase(),
-        hasVoted,
-      });
+      const addresses = await fac.getElections();
+      const items = [];
+      for (let idx = 0; idx < addresses.length; idx++) {
+        const addr = addresses[idx];
+        try {
+          const election = await getContract(addr, electionAbi);
+          const [name, description, startTime, endTime, active, votingType, maxChoices, electionAdmin] = await Promise.all([
+            election.name(),
+            election.description(),
+            election.startTime(),
+            election.endTime(),
+            election.isActive(),
+            election.votingType(),
+            election.maxChoices(),
+            election.admin(),
+          ]);
+          const candidates = await election.getCandidates();
+          const totalVotes = await election.totalVotes();
+          const acc = currentAccount || account;
+          const hasVoted = acc ? await election.hasVoted(acc) : false;
+          items.push({
+            id: idx + 1,
+            address: addr,
+            name: name || "Elección sin nombre",
+            description: description || "",
+            startTime: Number(startTime),
+            endTime: Number(endTime),
+            totalVotes: Number(totalVotes),
+            options: (candidates || []).map((c) => c.name),
+            votes: (candidates || []).map((c) => Number(c.votes)),
+            isActive: active,
+            votingType: Number(votingType),
+            maxChoices: Number(maxChoices),
+            admin: (electionAdmin || "").toLowerCase(),
+            hasVoted,
+          });
+        } catch (electionErr) {
+          console.error(`Error cargando elección ${addr}:`, electionErr);
+        }
+      }
+      setElections(items);
+    } catch (err) {
+      console.error("Error en refreshData:", err);
+      toast.error("⚠️ Error al refrescar datos. Intenta de nuevo.");
     }
-    setElections(items);
   };
 
   const shortHash = (hash) => `${hash.slice(0, 8)}…${hash.slice(-6)}`;
@@ -268,7 +278,7 @@ function App() {
 
       <header className="app-header">
         <div>
-          <h1 className="app-title">🗳️ Sistema de Votación</h1>
+          <h1 className="app-title">🗳️ Plataforma de Votación</h1>
           <p className="app-subtitle">Red: {NETWORK} · Votantes: {totalVoters}</p>
         </div>
         <ConnectWallet account={account} onConnect={connectWallet} />
@@ -306,51 +316,53 @@ function App() {
       )}
 
       <main className={`layout theme-${effectiveTab}`}>
-        {!account ? (
-          <LandingPage onConnect={connectWallet} />
-        ) : effectiveTab === "home" ? (
-          <div className="card card-themed">
-            <Home
-              account={account}
-              isAdmin={isAdmin}
-              elections={elections}
-              totalVoters={totalVoters}
-              onNavigate={setActiveTab}
-            />
-          </div>
-        ) : effectiveTab === "admin" ? (
-          isAdmin ? (
-            <AdminLayout
-              elections={elections}
-              totalVoters={totalVoters}
-              onRegister={handleRegister}
-              onCreate={handleCreateElection}
-              onSelectElection={setSelectedElection}
-              activityLog={activityLog}
-            />
-          ) : (
-            <div className="card access-denied">
-              <strong>🔒 Acceso restringido</strong>
-              <p>No tienes permisos de administrador. Conecta la wallet del propietario del contrato.</p>
+        <ErrorBoundary>
+          {!account ? (
+            <LandingPage onConnect={connectWallet} />
+          ) : effectiveTab === "home" ? (
+            <div className="card card-themed">
+              <Home
+                account={account}
+                isAdmin={isAdmin}
+                elections={elections}
+                totalVoters={totalVoters}
+                onNavigate={setActiveTab}
+              />
             </div>
-          )
-        ) : effectiveTab === "vote" ? (
-          <div className="card card-themed">
-            <span className="section-context-badge vote">🗳️ Sección de votación</span>
-            <CastVote
-              elections={elections}
-              account={account}
-              onVote={handleVote}
-              onVoteMultiple={handleVoteMultiple}
-              loadingVote={loadingVote}
-            />
-          </div>
-        ) : (
-          <div className="card card-themed">
-            <span className="section-context-badge results">📊 Sección de resultados</span>
-            <ElectionViewer elections={elections} />
-          </div>
-        )}
+          ) : effectiveTab === "admin" ? (
+            isAdmin ? (
+              <AdminLayout
+                elections={elections}
+                totalVoters={totalVoters}
+                onRegister={handleRegister}
+                onCreate={handleCreateElection}
+                onSelectElection={setSelectedElection}
+                activityLog={activityLog}
+              />
+            ) : (
+              <div className="card access-denied">
+                <strong>🔒 Acceso restringido</strong>
+                <p>No tienes permisos de administrador. Conecta la wallet del propietario del contrato.</p>
+              </div>
+            )
+          ) : effectiveTab === "vote" ? (
+            <div className="card card-themed">
+              <span className="section-context-badge vote">🗳️ Sección de votación</span>
+              <CastVote
+                elections={elections}
+                account={account}
+                onVote={handleVote}
+                onVoteMultiple={handleVoteMultiple}
+                loadingVote={loadingVote}
+              />
+            </div>
+          ) : (
+            <div className="card card-themed">
+              <span className="section-context-badge results">📊 Sección de resultados</span>
+              <ElectionViewer elections={elections} />
+            </div>
+          )}
+        </ErrorBoundary>
       </main>
 
       {/* Chatbot — siempre visible para usuarios conectados o en landing */}

@@ -67,7 +67,7 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
           </span>
         </div>
         <h1 className="landing-title" style={{ marginBottom: 12, marginTop: 0 }}>
-          Sistema de votación descentralizado
+          Plataforma de votación descentralizada
         </h1>
         <p className="landing-desc" style={{ margin: 0, textAlign: "center" }}>
           Ya estás conectado y listo para participar de forma segura e inmutable.
@@ -258,8 +258,8 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
       <div style={{ marginTop: 32, padding: 20, background: "#f0f9ff", borderRadius: 12 }}>
         <strong style={{ color: "#0369a1" }}>💡 ¿Qué es esto?</strong>
         <p style={{ margin: "8px 0 0", color: "#0c4a6e", fontSize: 13, lineHeight: 1.6 }}>
-          Sistema de votación descentralizado basado en Ethereum. Cada voto queda registrado de
-          forma inmutable en la blockchain. Seguro, transparente y auditable en todo momento.
+          Plataforma de votación descentralizada basada en Ethereum. Cada voto queda registrado de
+          forma inmutable en la blockchain. Segura, transparente y auditable en todo momento.
         </p>
       </div>
 
