@@ -157,7 +157,7 @@ export default function CastVote({ elections, account, onVote, onVoteMultiple, l
             >
               <strong>✅ Ya emitiste tu voto</strong>
               <p style={{ margin: "4px 0 0", fontSize: 13 }}>
-                Tu voto ya fue registrado en blockchain. Solo puedes votar una vez por elección.
+                Tu voto ya quedó registrado de forma permanente. Solo puedes votar una vez por elección.
                 Consulta los resultados en la pestaña <strong>Resultados</strong>.
               </p>
             </div>
@@ -259,7 +259,7 @@ export default function CastVote({ elections, account, onVote, onVoteMultiple, l
         {loadingVote ? (
           <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span className="loader-spin" />
-            Enviando a blockchain...
+            Registrando voto...
           </span>
         ) : (
           "Revisar y emitir voto"

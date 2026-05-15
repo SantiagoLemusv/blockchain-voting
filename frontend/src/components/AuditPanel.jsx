@@ -112,7 +112,7 @@ export default function AuditPanel({ isAdmin = false }) {
       {loading && events.length === 0 && (
         <div className="empty-state">
           <div className="empty-state-icon">⏳</div>
-          <p className="empty-state-title">Leyendo eventos de blockchain...</p>
+          <p className="empty-state-title">Cargando bitácora pública...</p>
           <p className="empty-state-desc">Esto puede tardar unos segundos.</p>
         </div>
       )}
@@ -122,7 +122,7 @@ export default function AuditPanel({ isAdmin = false }) {
           <div className="empty-state-icon">📭</div>
           <p className="empty-state-title">Sin eventos registrados</p>
           <p className="empty-state-desc">
-            No hay actividad blockchain reciente que mostrar con este filtro.
+            No hay actividad reciente que mostrar con este filtro.
           </p>
         </div>
       )}

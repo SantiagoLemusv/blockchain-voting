@@ -23,7 +23,7 @@ export default function ChatBotButton({ isOpen, onToggle }) {
       {showHint && !isOpen && (
         <div className="chatbot-hint" onClick={handleClick}>
           <strong>¿Tienes dudas?</strong>
-          <p>Pregúntale al asistente sobre blockchain, votación o la plataforma.</p>
+          <p>Pregúntale al asistente sobre la votación, la privacidad o cómo funciona la plataforma.</p>
           <button className="chatbot-hint-close" onClick={(e) => { e.stopPropagation(); setShowHint(false); }}>
             ✕
           </button>

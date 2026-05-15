@@ -258,13 +258,13 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
       <div style={{ marginTop: 32, padding: 20, background: "#f0f9ff", borderRadius: 12 }}>
         <strong style={{ color: "#0369a1" }}>💡 ¿Qué es esto?</strong>
         <p style={{ margin: "8px 0 0", color: "#0c4a6e", fontSize: 13, lineHeight: 1.6 }}>
-          Plataforma de votación descentralizada basada en Ethereum. Cada voto queda registrado de
-          forma inmutable en la blockchain. Segura, transparente y auditable en todo momento.
+          Plataforma de votación segura y verificable. Cada voto queda registrado de forma
+          permanente, protegido criptográficamente y auditable en todo momento.
         </p>
       </div>
 
       {/* Blockchain transparency */}
-      <div className="section-divider" style={{ marginTop: 24 }}>Contratos desplegados (transparencia)</div>
+      <div className="section-divider" style={{ marginTop: 24 }}>Verificación pública</div>
       <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
         <div style={{ padding: 12, background: "var(--bg)", borderRadius: 8, border: "1px solid var(--border)" }}>
           <div style={{ fontSize: 11, color: "var(--muted)", fontWeight: 600, marginBottom: 4 }}>
@@ -316,7 +316,8 @@ export default function Home({ account, isAdmin, elections, totalVoters, onNavig
         </div>
       </div>
       <p className="small" style={{ marginTop: 6 }}>
-        Estos son los smart contracts que sustentan toda la plataforma. Auditables desde cualquier explorador blockchain.
+        Identificadores públicos de los componentes que sustentan la plataforma. Cualquier persona puede verificarlos
+        de forma independiente.
       </p>
 
       {selectedReceipt && (

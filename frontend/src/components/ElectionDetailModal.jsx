@@ -40,7 +40,7 @@ export default function ElectionDetailModal({ election, onClose }) {
         {/* Contract transparency - smart contract address */}
         <div style={{ marginBottom: 16, padding: "8px 10px", background: "#f0f9ff", borderRadius: 8, border: "1px solid #bae6fd" }}>
           <div style={{ fontSize: 11, color: "#0369a1", fontWeight: 600, marginBottom: 4 }}>
-            📜 Contrato blockchain (auditable)
+            📜 Identificador público auditable
           </div>
           {explorerUrl ? (
             <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="contract-pill">

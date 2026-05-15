@@ -41,7 +41,8 @@ export default class ErrorBoundary extends Component {
             Algo salió mal
           </h2>
           <p style={{ margin: "0 0 16px", color: "#7f1d1d", fontSize: 14 }}>
-            La aplicación encontró un error inesperado. Tus datos están a salvo en blockchain.
+            La aplicación encontró un error inesperado. Tus datos están a salvo — la información está registrada
+            de forma permanente.
           </p>
           {this.state.error?.message && (
             <code

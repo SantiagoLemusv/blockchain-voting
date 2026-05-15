@@ -63,7 +63,7 @@ export default function VoteReceipt({ receipt, onClose }) {
             Voto registrado exitosamente
           </h2>
           <p className="muted" style={{ margin: "6px 0 0", fontSize: 13 }}>
-            Tu voto quedó grabado de forma inmutable en blockchain
+            Tu voto quedó registrado de forma permanente y verificable
           </p>
         </div>
 
@@ -138,8 +138,8 @@ export default function VoteReceipt({ receipt, onClose }) {
         <div className="receipt-privacy">
           <strong>🔐 Sobre tu privacidad</strong>
           <p>
-            Este comprobante <strong>NO revela qué opción votaste</strong>. Solo certifica que tu transacción fue
-            registrada en blockchain. Cualquier persona puede verificar el hash sin acceder al contenido del voto.
+            Este comprobante <strong>NO revela qué opción votaste</strong>. Solo certifica que tu voto fue
+            registrado correctamente. Cualquier persona puede verificar el código sin acceder al contenido del voto.
           </p>
         </div>
 

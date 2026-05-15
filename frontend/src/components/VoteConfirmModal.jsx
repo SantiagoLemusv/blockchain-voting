@@ -77,8 +77,8 @@ export default function VoteConfirmModal({ election, selectedSingle, selectedMul
         <div className="vote-confirm-warning">
           <strong style={{ fontSize: 13 }}>⚠️ Atención</strong>
           <p style={{ margin: "4px 0 0", fontSize: 12, lineHeight: 1.5 }}>
-            Esta acción es <strong>irreversible</strong>. Una vez firmada, tu voto quedará registrado de forma permanente
-            en blockchain y <strong>no podrá modificarse</strong>.
+            Esta acción es <strong>irreversible</strong>. Una vez confirmada, tu voto quedará registrado de forma permanente
+            y <strong>no podrá modificarse</strong>.
           </p>
         </div>
 
@@ -98,12 +98,12 @@ export default function VoteConfirmModal({ election, selectedSingle, selectedMul
             onClick={onConfirm}
             disabled={loading}
           >
-            {loading ? "Firmando..." : "Confirmar y firmar →"}
+            {loading ? "Confirmando..." : "Confirmar voto →"}
           </button>
         </div>
 
         <p className="small" style={{ textAlign: "center", marginTop: 12 }}>
-          🔐 MetaMask te pedirá firmar la transacción. Confírmala para enviar el voto.
+          🔐 Te pediremos una confirmación de seguridad para enviar tu voto.
         </p>
       </div>
     </div>

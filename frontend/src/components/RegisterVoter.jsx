@@ -7,8 +7,8 @@ export default function RegisterVoter({ isAdmin, onRegister }) {
   const [loading, setLoading] = useState(false);
 
   const validateAddress = (value) => {
-    if (!value.trim()) return "La dirección es obligatoria.";
-    if (!ethers.isAddress(value.trim())) return "Dirección Ethereum inválida. Debe empezar con 0x y tener 42 caracteres.";
+    if (!value.trim()) return "El identificador es obligatorio.";
+    if (!ethers.isAddress(value.trim())) return "Identificador inválido. Debe empezar con 0x y tener 42 caracteres.";
     return "";
   };
 
@@ -35,13 +35,13 @@ export default function RegisterVoter({ isAdmin, onRegister }) {
   return (
     <div>
       <div className="flex-between">
-        <h2 className="section-title">Registrar Votante</h2>
+        <h2 className="section-title">Autorizar nuevo participante</h2>
         <span className={isAdmin ? "badge badge-success" : "badge badge-muted"}>
           {isAdmin ? "Admin" : "Sólo admin"}
         </span>
       </div>
       <p className="muted" style={{ marginBottom: 12 }}>
-        Ingresa la dirección de la cuenta que podrá votar.
+        Ingresa el identificador único del participante que podrá votar.
       </p>
       <form onSubmit={handleSubmit} style={{ display: "grid", gap: 8 }}>
         <div>

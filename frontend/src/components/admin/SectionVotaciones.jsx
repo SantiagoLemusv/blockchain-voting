@@ -17,8 +17,8 @@ export default function SectionVotaciones({ elections, onCreate, onSelectElectio
     <div>
       <h2 className="section-title">🗳️ Gestión de votaciones</h2>
       <p className="muted" style={{ marginBottom: 20, fontSize: 13 }}>
-        Crea nuevas elecciones y administra las existentes. Cada elección queda registrada como un contrato blockchain
-        independiente.
+        Crea nuevas elecciones y administra las existentes. Cada elección queda registrada de forma independiente,
+        permanente y verificable.
       </p>
 
       {/* Formulario crear */}

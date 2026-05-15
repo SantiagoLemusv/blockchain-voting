@@ -3,9 +3,9 @@ import RegisterVoter from "../RegisterVoter";
 export default function SectionUsuarios({ onRegister, totalVoters }) {
   return (
     <div>
-      <h2 className="section-title">👥 Gestión de usuarios</h2>
+      <h2 className="section-title">👥 Gestión de participantes</h2>
       <p className="muted" style={{ marginBottom: 20, fontSize: 13 }}>
-        Registra las direcciones Ethereum que pueden participar en las votaciones. Solo las direcciones registradas pueden
+        Autoriza a las personas que podrán participar en las votaciones. Solo los participantes registrados pueden
         emitir votos.
       </p>
 
@@ -31,14 +31,15 @@ export default function SectionUsuarios({ onRegister, totalVoters }) {
 
       {/* Info */}
       <div style={{ marginTop: 20, padding: 16, background: "#f0f9ff", borderRadius: 8 }}>
-        <strong style={{ color: "#0369a1", fontSize: 13 }}>💡 ¿Cómo funciona el registro?</strong>
+        <strong style={{ color: "#0369a1", fontSize: 13 }}>💡 ¿Cómo funciona la autorización?</strong>
         <p style={{ margin: "6px 0 0", fontSize: 12, color: "#0c4a6e", lineHeight: 1.6 }}>
-          Cada votante necesita una dirección Ethereum válida (su wallet MetaMask). Esa dirección se registra una sola vez
-          en el contrato <code>VoterRegistry</code>. Una vez autorizada, podrá participar en cualquier elección activa.
+          Cada participante necesita un identificador único (su billetera digital). Lo autorizas una sola vez y, a partir
+          de ahí, podrá votar en cualquier elección activa.
         </p>
         <p style={{ margin: "8px 0 0", fontSize: 12, color: "#0c4a6e", lineHeight: 1.6 }}>
-          <strong>⚠️ Nota de privacidad:</strong> El registro es público en blockchain (cualquiera puede ver las direcciones
-          autorizadas), pero la identidad real detrás de cada dirección permanece privada.
+          <strong>🔐 Privacidad:</strong> La lista de participantes autorizados es pública (cualquiera puede verificar
+          quién está habilitado), pero la <em>identidad real</em> de cada persona permanece protegida — solo tú custodias
+          esa relación.
         </p>
       </div>
     </div>

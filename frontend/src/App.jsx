@@ -36,7 +36,7 @@ const getHumanError = (err) => {
   if (msg.includes("Duplicate candidate")) return "No puedes seleccionar la misma opción dos veces.";
   if (msg.includes("Must select at least one")) return "Debes seleccionar al menos una opción.";
   if (msg.includes("Admin cannot vote")) return "Los administradores no pueden votar en elecciones que ellos mismos crearon.";
-  if (msg.includes("user rejected")) return "Transacción rechazada en MetaMask.";
+  if (msg.includes("user rejected")) return "Cancelaste la confirmación de seguridad.";
   return msg.slice(0, 120) || "Error desconocido. Intenta de nuevo.";
 };
 
@@ -84,7 +84,7 @@ function App() {
   // Conexión explícita: muestra popup MetaMask (solo cuando el usuario lo pide)
   const connectWallet = async () => {
     if (!window.ethereum) {
-      toast.error("⚠️ No se detectó MetaMask. Instálalo para continuar.");
+      toast.error("⚠️ No se detectó una billetera digital. Instala MetaMask u otra compatible para continuar.");
       return;
     }
     try {
@@ -370,7 +370,7 @@ function App() {
             ) : (
               <div className="card access-denied">
                 <strong>🔒 Acceso restringido</strong>
-                <p>No tienes permisos de administrador. Conecta la wallet del propietario del contrato.</p>
+                <p>No tienes permisos de administrador. Inicia sesión con la cuenta autorizada para administrar.</p>
               </div>
             )
           ) : effectiveTab === "vote" ? (

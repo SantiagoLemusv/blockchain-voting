@@ -105,12 +105,12 @@ export default function SectionResumen({ elections, totalVoters, activityLog, on
         <button className="card admin-quick-btn" onClick={() => onNavigateSection?.("usuarios")}>
           <div style={{ fontSize: 24 }}>👤</div>
           <strong style={{ fontSize: 13 }}>Registrar votante</strong>
-          <span className="small">Autorizar nueva wallet</span>
+          <span className="small">Autorizar nuevo participante</span>
         </button>
         <button className="card admin-quick-btn" onClick={() => onNavigateSection?.("auditoria")}>
           <div style={{ fontSize: 24 }}>🔍</div>
           <strong style={{ fontSize: 13 }}>Auditar sistema</strong>
-          <span className="small">Ver eventos blockchain</span>
+          <span className="small">Ver bitácora pública</span>
         </button>
       </div>
 
