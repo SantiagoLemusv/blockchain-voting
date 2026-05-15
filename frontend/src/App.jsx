@@ -191,12 +191,12 @@ function App() {
       const tx = await registry.registerVoter(addr);
       pendingToast = toast.info(`⏳ Registrando votante... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       await tx.wait();
-      toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       await refreshData(registry, factory, account);
       logActivity("voter_registered", { name: addr });
       toast.success(`✅ Votante registrado · ${shortHash(tx.hash)}`);
     } catch (err) {
-      if (pendingToast) toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     }
@@ -211,12 +211,12 @@ function App() {
       const tx = await factory.createElection(name, description, options, startTime, endTime, votingType, maxChoices);
       pendingToast = toast.info(`⏳ Creando elección... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       await tx.wait();
-      toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       await refreshData(registry, factory, account);
       logActivity("election_created", { name });
       toast.success(`✅ Elección "${name}" creada · ${shortHash(tx.hash)}`);
     } catch (err) {
-      if (pendingToast) toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     }
@@ -241,7 +241,7 @@ function App() {
       const tx = await election.voteSingle(candidateId);
       pendingToast = toast.info(`⏳ Enviando voto... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       const txReceipt = await tx.wait();
-      toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       await refreshData(registry, factory, account);
       const e = elections.find((el) => el.address === electionAddress);
       logActivity("vote_cast", { name: e?.name || electionAddress });
@@ -252,7 +252,7 @@ function App() {
       saveReceipt(account, receipt);
       setVoteReceipt(receipt);
     } catch (err) {
-      if (pendingToast) toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     } finally {
@@ -268,7 +268,7 @@ function App() {
       const tx = await election.voteMultiple(candidateIds);
       pendingToast = toast.info(`⏳ Enviando ${candidateIds.length} votos... (tx: ${shortHash(tx.hash)})`, { autoClose: false });
       const txReceipt = await tx.wait();
-      toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       await refreshData(registry, factory, account);
       const e = elections.find((el) => el.address === electionAddress);
       logActivity("vote_multiple", { name: e?.name || electionAddress });
@@ -279,7 +279,7 @@ function App() {
       saveReceipt(account, receipt);
       setVoteReceipt(receipt);
     } catch (err) {
-      if (pendingToast) toast.dismiss(pendingToast);
+      if (pendingToast !== undefined && pendingToast !== false) toast.dismiss(pendingToast);
       console.error(err);
       toast.error(`⚠️ ${getHumanError(err)}`);
     } finally {
