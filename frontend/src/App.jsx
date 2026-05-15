@@ -60,19 +60,47 @@ function App() {
 
   useEffect(() => {
     if (window.ethereum) {
-      window.ethereum.on("accountsChanged", () => connectWallet());
-      window.ethereum.on("chainChanged", () => connectWallet());
+      window.ethereum.on("accountsChanged", () => silentReconnect());
+      window.ethereum.on("chainChanged", () => silentReconnect());
     }
-    connectWallet();
+    silentReconnect();
   }, []);
 
-  const connectWallet = async () => {
+  // Auto-reconnect SIN popup: solo lee cuentas ya autorizadas previamente
+  const silentReconnect = async () => {
     if (!window.ethereum) return;
-    await ensureNetwork(NETWORK);
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-    const addr = accounts[0];
-    setAccount(addr);
-    await loadContracts();
+    try {
+      const accounts = await window.ethereum.request({ method: "eth_accounts" });
+      if (accounts && accounts.length > 0) {
+        await ensureNetwork(NETWORK);
+        setAccount(accounts[0]);
+        await loadContracts();
+      }
+    } catch (err) {
+      console.error("Error en reconexión silenciosa:", err);
+    }
+  };
+
+  // Conexión explícita: muestra popup MetaMask (solo cuando el usuario lo pide)
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      toast.error("⚠️ No se detectó MetaMask. Instálalo para continuar.");
+      return;
+    }
+    try {
+      await ensureNetwork(NETWORK);
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const addr = accounts[0];
+      setAccount(addr);
+      await loadContracts();
+    } catch (err) {
+      if (err.code === 4001) {
+        toast.info("Conexión cancelada");
+      } else {
+        console.error(err);
+        toast.error("⚠️ No se pudo iniciar la sesión");
+      }
+    }
   };
 
   const loadContracts = async () => {

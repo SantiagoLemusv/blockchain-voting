@@ -19,10 +19,11 @@ function formatTs(ts) {
   return format(new Date(ts * 1000), "dd MMM yyyy HH:mm:ss", { locale: es });
 }
 
-export default function AuditPanel() {
+export default function AuditPanel({ isAdmin = false }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState("all");
+  const [showAddresses, setShowAddresses] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -54,10 +55,37 @@ export default function AuditPanel() {
         </button>
       </div>
       <p className="muted" style={{ marginBottom: 16, fontSize: 13 }}>
-        Registro inmutable de eventos blockchain. Cada operación tiene su huella criptográfica y puede verificarse públicamente.
+        Registro inmutable de eventos. Cada operación tiene su huella criptográfica única y puede verificarse de forma pública.
         <br />
-        <strong>🔐 Privacidad:</strong> No se expone qué opción votó cada persona, solo que la transacción ocurrió.
+        <strong>🔐 Privacidad:</strong> Esta bitácora confirma <em>que</em> ocurrió una transacción, pero nunca revela
+        <em> qué opción</em> votó cada participante. Las identidades se muestran como huellas visuales por defecto.
       </p>
+
+      {isAdmin && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            marginBottom: 12,
+            padding: "8px 12px",
+            background: "var(--bg)",
+            borderRadius: 8,
+            border: "1px solid var(--border)",
+            fontSize: 12,
+          }}
+        >
+          <input
+            type="checkbox"
+            id="show-addresses"
+            checked={showAddresses}
+            onChange={(e) => setShowAddresses(e.target.checked)}
+          />
+          <label htmlFor="show-addresses" style={{ cursor: "pointer", userSelect: "none" }}>
+            👁️ Mostrar direcciones técnicas (solo admin)
+          </label>
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="audit-filters">
@@ -155,9 +183,18 @@ export default function AuditPanel() {
                   {ev.payload?.voter && (
                     <>
                       <span className="audit-key">Origen:</span>
-                      <span className="audit-value mono" title={ev.payload.voter}>
-                        {truncate(ev.payload.voter)}
-                      </span>
+                      {isAdmin && showAddresses ? (
+                        <span className="audit-value mono" title={ev.payload.voter}>
+                          {truncate(ev.payload.voter)}
+                        </span>
+                      ) : (
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <HashVisual hash={ev.payload.voter} size={20} />
+                          <span className="audit-value" style={{ fontSize: 11, color: "var(--muted)" }}>
+                            Participante autenticado
+                          </span>
+                        </span>
+                      )}
                     </>
                   )}
                 </div>
